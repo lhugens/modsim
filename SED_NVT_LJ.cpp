@@ -160,10 +160,11 @@ int move_particle() {
         return 1;
     }
 
-    for (int d = 0; d < NDIM; d++)
-        if (r[rpid][3] <= box[3]) {                 //boundary condition if r is still in box range
+    if (r[rpid][3] <= 0) {             //boundary condition if r_z is still in box range 
+        for (int d = 0; d < NDIM; d++) {
             r[rpid][d] = old_pos[d];
         }
+    }
     return 0;
 }
 
@@ -190,20 +191,29 @@ void set_density() {
 }
 
 //Gravitational potential
-double gravitational_potential(int rpid) { //like this ?
+double gravitational_potential(int rpid){ //like this ?
     double mass = vol * density;
-    return mass * gravity * r[rpid][3];
+    double z = r[rpid][3];
+    double result = mass * gravity * z;
+    return result;
 }
 
 //Write a routine that initializes Npart particles randomly in your simulation box
-double generate_particles(int nPart) {
-    for (int n; n < nPart; n++) {
+//first attempt, way to simple I guess
+
+double generate_particles(int nPart) { //for a desired number of particles
+    int pid = 0;
+    for (int n = 0; n < nPart; n++) {
         //initialize particle with certain position 
-        //move them
-        //calc density
-            //move particle / give position
+        pid += 1;      //we increase the number of particles by 1
+        if (r[pid][3] <= 0) { //boundary condiion 1. 0 -> box[3] ? 
+            pid = n_particles;
+            set_density();        //calculate the new density
+            move_particle();     //and move the paticle to give it a random position
+        } //When moving them, boundary condition of hard bottom is (again) applied in z direction
+        else {pid -= 1;} //toget the correct number of particles in the end with all restricted in -z
         }
-    }
+    return n_particles;
 }
 
 int main(int argc, char* argv[]) {
@@ -211,7 +221,7 @@ int main(int argc, char* argv[]) {
     assert(delta > 0.0);
 
     e_cut = 4.0 * (pow(1.0 / r_cut, 12.0) - pow(1.0 / r_cut, 6.0));
-
+    // from here 
     read_data();
 
     if (n_particles == 0) {
@@ -221,7 +231,7 @@ int main(int argc, char* argv[]) {
 
     size_t seed = time(NULL);
     dsfmt_seed(seed);
-
+    //to here: should be included in particle generation
     // Build density and temperature array
 
     const int len_rhos = 10;
