@@ -20,7 +20,7 @@ double       beta = 0.5;
 const double delta = 0.1;
 const double r_cut = 2.5;
 const char* init_filename = "fcc.dat";
-double gravity = 9.81; //m/s^2 ...better option ?
+double mgravity = 5; //values defined in the exercise
 
 // Simulation variables
 int n_particles = 0;    // number of particles
@@ -192,9 +192,8 @@ void set_density() {
 
 //Gravitational potential
 double gravitational_potential(int rpid){ //like this ?
-    double mass = vol * density;
     double z = r[rpid][3];
-    double result = mass * gravity * z;
+    double result =  mgravity * z; // mass times gavity as one variable for next parts
     return result;
 }
 
