@@ -3,7 +3,11 @@
 #include <assert.h>
 #include <math.h>
 #include "mt19937.h"
-//#pragma warning(disable : 5208)
+#include <iostream>     // cout
+#include <iomanip>     // cout
+#include <complex>      //real
+
+using namespace std;
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -21,6 +25,7 @@ const double delta = 0.1;
 const double r_cut = 2.5;
 const char* init_filename = "fcc.dat";
 double mgravity = 5; //values defined in the exercise
+double z_max = 0;
 
 // Simulation variables
 int n_particles = 0;    // number of particles
@@ -119,6 +124,7 @@ particle_info_t particle_energy_and_virial(int pid) {
             info.energy += 4.0 * temp * (temp - 1.0) - e_cut;
             info.virial += 24.0 * temp * (2.0 * temp - 1.0);
         }
+        info.energy += mgravity * r[pid][3]; //adding gravitational force
     }
     return info;
 }
@@ -150,6 +156,8 @@ int move_particle() {
         r[rpid][d] += delta * (2.0 * dsfmt_genrand() - 1.0) + box[d];
         r[rpid][d] -= (int)(r[rpid][d] / box[d]) * box[d];
     }
+    if (r[rpid][3] >= 0) {//boundary condition if r_z is still in box range 
+
 
     particle_info_t new_info = particle_energy_and_virial(rpid);
 
@@ -157,12 +165,14 @@ int move_particle() {
     if (dE < 0.0 || dsfmt_genrand() < exp(-beta * dE)) {
         energy += dE;
         virial += new_info.virial - info.virial;
+        if (r[rpid][3] > z_max) {               // to get z_max for the histogram
+            z_max = r[rpid][3];
+        }
         return 1;
     }
 
-    if (r[rpid][3] <= 0) {             //boundary condition if r_z is still in box range 
-        for (int d = 0; d < NDIM; d++) {
-            r[rpid][d] = old_pos[d];
+    for (int d = 0; d < NDIM; d++) {
+         r[rpid][d] = old_pos[d];
         }
     }
     return 0;
@@ -190,13 +200,6 @@ void set_density() {
     }
 }
 
-//Gravitational potential
-double gravitational_potential(int rpid){ //like this ?
-    double z = r[rpid][3];
-    double result =  mgravity * z; // mass times gavity as one variable for next parts
-    return result;
-}
-
 //Write a routine that initializes Npart particles randomly in your simulation box
 //first attempt, way to simple I guess
 
@@ -205,7 +208,7 @@ double generate_particles(int nPart) { //for a desired number of particles
     for (int n = 0; n < nPart; n++) {
         //initialize particle with certain position 
         pid += 1;      //we increase the number of particles by 1
-        if (r[pid][3] <= 0) { //boundary condiion 1. 0 -> box[3] ? 
+        if (r[pid][3] >= 0) { //boundary condiion 1. 0 -> box[3] ? 
             pid = n_particles;
             set_density();        //calculate the new density
             move_particle();     //and move the paticle to give it a random position
@@ -213,6 +216,33 @@ double generate_particles(int nPart) { //for a desired number of particles
         else {pid -= 1;} //toget the correct number of particles in the end with all restricted in -z
         }
     return n_particles;
+}
+
+void number_density(double density){
+    int bin;
+    double dz = 0.08;
+    double temp = z_max / dz;
+    int maxbin = (int)(temp)+1;
+    int hist[5000] = { 0 };
+    double n_rho; // number density = N/V
+
+    char buffer[100] = { 0 };
+    sprintf(buffer, "n_density%lf.dat", density);
+    FILE* fp = fopen(buffer, "w");
+
+    for (int i = 0; i < n_particles; i++) {
+            bin = int(r[i][3]/dz) +1 ;
+            if (bin < maxbin) {
+                hist[bin] = hist[bin] + 1;
+            }
+    }
+    //normalization part/calculation part
+    for (bin = 0; bin < maxbin; bin++) {
+        n_rho = hist[bin] / (n_particles * dz);
+    //    fprintf(fp, "%lf %lf\n", bin * dz, n_rho);
+    //    cout << left << setw(10) << bin * dz << setw(10) << n_rho << endl;
+    }
+    fclose(fp);
 }
 
 int main(int argc, char* argv[]) {
@@ -240,6 +270,7 @@ int main(int argc, char* argv[]) {
     double d_rho = (max_rho - min_rho) / (double)len_rhos;
 
     double betas[] = { 0.5, 1.0, 2.0 };
+
 
 
     // Main loop
@@ -282,7 +313,6 @@ int main(int argc, char* argv[]) {
             FILE* fp = fopen(buffer, "w");
 
             // Main procedure
-
             int accepted = 0;
             for (int step = 0; step < mc_steps; ++step) {
                 for (int n = 0; n < n_particles; ++n) { 
@@ -294,9 +324,8 @@ int main(int argc, char* argv[]) {
                 }
 
                 measurement_t ms = measure();
-
+                number_density(density);
                 fprintf(fp, "%d\t%f\t%f\n", step, ms.average_pressure, ms.mu_excess);
-
 
                 if (step % output_steps == 0) {
                     printf("Step %d. Move acceptance: %f.\n",
@@ -306,11 +335,10 @@ int main(int argc, char* argv[]) {
                     //write_data(step);
                 }
             }
-
             fclose(fp);
-
         }
     }
+    
 
     return 0;
 }
