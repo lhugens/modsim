@@ -239,7 +239,7 @@ void number_density(double density){
     //normalization part/calculation part
     for (bin = 0; bin < maxbin; bin++) {
         n_rho = hist[bin] / (n_particles * dz);
-    //    fprintf(fp, "%lf %lf\n", bin * dz, n_rho);
+        fprintf(fp, "%lf %lf\n", bin * dz, n_rho);
     //    cout << left << setw(10) << bin * dz << setw(10) << n_rho << endl;
     }
     fclose(fp);
