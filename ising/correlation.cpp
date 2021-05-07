@@ -7,13 +7,13 @@ int main(){
     dsfmt_seed(time(NULL));
 
     // size of the array
-    int size = 6;
+    int size = 1000;
     
     // creating a random array just to test the correlation function
     cout << "array:" << endl;
     double m[size];
     for(int i=0; i<size; i++){
-        m[i] =  dsfmt_genrand();
+        m[i] = 1;
         cout << m[i] << endl;
     }
 
