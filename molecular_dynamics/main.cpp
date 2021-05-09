@@ -17,15 +17,19 @@ struct dynamics{
     double dt;                  // time step
     double m = 1;               // particle mass
     double beyta = 0.5;         // beyta = 1 / (k_B * T)
-    vector<vector<double>> r0;  // array to store particle positions at t - dt
-    vector<vector<double>> r1;  // array to store particle positions at t
+    double force_coefficient;   // force coefficient
+    vector<vector<double>> r;  // array to store particle positions at t
+    vector<vector<double>> dr;  // array to store particle displacement
+    vector<vector<double>> f;   // array to store total force acting on each particle
 
 
     dynamics(int NPART, double DT, double BOX_L) :
         npart(NPART), dt(DT), box_l(BOX_L)
     {
-        r0.resize(npart, vector<double>(ndim));
-        r1.resize(npart, vector<double>(ndim));
+        force_coefficient = pow(dt, 2) / m;
+        r.resize(npart, vector<double>(ndim));
+        dr.resize(npart, vector<double>(ndim));
+        f.resize(npart, vector<double>(ndim));
         dsfmt_seed(time(NULL));
     }
 
@@ -51,7 +55,7 @@ struct dynamics{
         for(int i=0; i<npart; i++){
             file << left;
             for(int j=0; j<ndim; j++){
-                file << setw(20) << r0[i][j];
+                file << setw(20) << r[i][j];
             }
             file << setw(20) << 0.5 << endl;
         }
@@ -96,13 +100,34 @@ struct dynamics{
         return fij;
     }
 
+    void update_forces(){
+        double sq, factor;
+        vector<double> rij(ndim);
+
+        for(int i=0; i<npart-1; i++){
+            for(int j=i+1; j<npart; j++){
+                for(int k=0; k<ndim; k++){
+                    rij[k]  = r[i][k]-r[j][k];
+                    rij[k] -= round(rij[k] / box_l) * box_l; // periodic boundary conditions
+                    f[i][k] = 0;
+                    f[j][k] = 0;
+                }
+                sq = square_norm(rij);
+                factor = 48 * (1/pow(sq, 3) - 0.5) / pow(sq, 4);
+                for(int k=0; k<ndim; k++){
+                    f[i][k] += rij[k] * factor;
+                    f[j][k] -= rij[k] * factor;
+                }
+            }
+        }
+    }
 
     void initialize_positions_velocities(){
 
         // random r0 positions, each component in [-box_l, box_l]
         for(int i=0; i<npart; i++){
             for(int j=0; j<ndim; j++){
-                r0[i][j] = box_l * rand();
+                r[i][j] = box_l * rand();
             }
         }
 
@@ -141,16 +166,28 @@ struct dynamics{
         // determine r1 based on these velocities 
         // and on calculated forces
         double force_coefficient = pow(dt, 2) / (2*m);
-        vector<double> fij;
+        update_forces();
 
-        for(int i=0; i<npart-1; i++){
-            for(int j=i+1; j<npart; j++){
-                fij = force(r0[i], r0[j]);
-                for(int k=0; k<ndim; k++){
-                    r1[i][k] = r0[i][k] + v0[i][k]*dt + fij[k] * force_coefficient;
-                    r1[j][k] = r0[j][k] + v0[j][k]*dt - fij[k] * force_coefficient;
-                }
-            } 
+        for(int i=0; i<npart; i++){
+            for(int j=0; j<ndim; j++){
+                dr[i][j] = v0[i][j]*dt + f[i][j] * force_coefficient / 2;
+                r[i][j] += dr[i][j];
+                r[i][j] += box_l - box_l * (int)((box_l + r[i][j])/box_l);
+            }
+        }
+    }
+
+    void verlet_step(){
+        step += 1;
+        update_forces();
+        double temp;
+
+        for(int k=0; k<npart; k++){
+            for(int l=0; l<ndim; l++){
+                dr[k][l] += f[k][l] * force_coefficient;
+                r[k][l] += dr[k][l];
+                r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
+            }
         }
     }
 
@@ -160,12 +197,8 @@ int main(){
     dynamics md(10, 0.01, 10);
     md.initialize_positions_velocities();
     md.write_positions_to_file();
-    for(int i=0; i<md.npart; i++){
-        for(int j=0; j<ndim; j++){
-            md.r0[i][j] = md.r1[i][j];
-        }
+    for(int i=0; i<1000; i++){
+        md.verlet_step();
+        md.write_positions_to_file();
     }
-    md.step += 1;
-    md.write_positions_to_file();
 }
-
