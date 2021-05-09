@@ -14,13 +14,18 @@ struct dynamics{
     int npart;                  // number of particles
     int step = 0;               // current time step of the simulation
     double box_l;               // (cubic) box side length
+    double r_cut_squared;       // cut-off square distance of the potential
+    double e_cut;               // cut-off energy of the potential
     double dt;                  // time step
     double m = 1;               // particle mass
     double beyta = 0.5;         // beyta = 1 / (k_B * T)
     double force_coefficient;   // force coefficient
-    vector<vector<double>> r;  // array to store particle positions at t
+    double kinetic_energy;      // total kinetic_energy of the system
+    double potential_energy;    // total potential_energy of the system
+    vector<vector<double>> r;   // array to store particle positions at t
     vector<vector<double>> dr;  // array to store particle displacement
     vector<vector<double>> f;   // array to store total force acting on each particle
+    ofstream file;
 
 
     dynamics(int NPART, double DT, double BOX_L) :
@@ -31,6 +36,11 @@ struct dynamics{
         dr.resize(npart, vector<double>(ndim));
         f.resize(npart, vector<double>(ndim));
         dsfmt_seed(time(NULL));
+        file.open("state_variables.txt");
+
+        r_cut_squared = pow(box_l / 3, 2);
+        double sq = pow(r_cut_squared, 3);
+        e_cut = (4 / sq) * ((1/sq) - 1);
     }
 
     inline double rand(){
@@ -62,6 +72,13 @@ struct dynamics{
         file.close();
     }
 
+    void write_state_variables_to_file(){
+        file << left << setw(20) << step 
+                     << setw(20) << kinetic_energy 
+                     << setw(20) << potential_energy
+                     << endl;
+    }
+
     void print(vector<vector<double>> &v){
         for(int i=0; i<v.size(); i++){
             cout << left;
@@ -86,22 +103,9 @@ struct dynamics{
         return sum;
     }
 
-    vector<double> force(vector<double> &ri, vector<double> &rj){
-        vector<double> rij(ndim);
-        vector<double> fij(ndim);
-        for(int k=0; k<ndim; k++){
-            rij[k] = ri[k]-rj[k];
-        }
-        double sq = square_norm(rij);
-        double factor = 48 * (1/pow(sq, 3) - 0.5) / pow(sq, 4);
-        for(int k=0; k<ndim; k++){
-            fij[k] = rij[k] * factor;
-        }
-        return fij;
-    }
-
     void update_forces(){
         double sq, factor;
+        potential_energy = 0;
         vector<double> rij(ndim);
 
         for(int i=0; i<npart-1; i++){
@@ -113,13 +117,18 @@ struct dynamics{
                     f[j][k] = 0;
                 }
                 sq = square_norm(rij);
-                factor = 48 * (1/pow(sq, 3) - 0.5) / pow(sq, 4);
-                for(int k=0; k<ndim; k++){
-                    f[i][k] += rij[k] * factor;
-                    f[j][k] -= rij[k] * factor;
+                if (sq < r_cut_squared){
+                    factor = 48 * (1/pow(sq, 3) - 0.5) / pow(sq, 4);
+                    sq = pow(sq, 3);
+                    for(int k=0; k<ndim; k++){
+                        f[i][k] += rij[k] * factor;
+                        f[j][k] -= rij[k] * factor;
+                        potential_energy += (4 / sq) * ((1/sq) - 1);
+                    }
                 }
             }
         }
+        potential_energy -= e_cut;
     }
 
     void initialize_positions_velocities(){
@@ -191,14 +200,26 @@ struct dynamics{
         }
     }
 
+    void update_kinetic_energy(){
+        kinetic_energy = 0;
+        for(int k=0; k<npart; k++){
+            for(int l=0; l<ndim; l++){
+                kinetic_energy += m * pow((dr[k][l] / dt), 2) / 2;
+            }
+        }
+    }
+
 };
 
 int main(){
-    dynamics md(10, 0.01, 10);
+    dynamics md(100, 0.01, 10);
     md.initialize_positions_velocities();
     md.write_positions_to_file();
     for(int i=0; i<1000; i++){
         md.verlet_step();
+        md.update_kinetic_energy();
+        cout << md.potential_energy << endl;
         md.write_positions_to_file();
+        md.write_state_variables_to_file();
     }
 }
