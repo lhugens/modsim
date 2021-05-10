@@ -27,9 +27,8 @@ struct dynamics{
     vector<vector<double>> r;   // array to store particle positions at t
     vector<vector<double>> dr;  // array to store particle displacement
     vector<vector<double>> f;   // array to store total force acting on each particle
-    double standard_deviation = 1 / sqrt(m*beyta);
-    std::default_random_engine gen;
-    std::normal_distribution<double> gaussian = normal_distribution<double>(5.0, standard_deviation);
+    default_random_engine gen;
+    normal_distribution<double> gaussian;
     ofstream file;
 
 
@@ -47,6 +46,8 @@ struct dynamics{
         r_cut_squared = pow(box_l / 3, 2);
         double r_cut_pow_6 = pow(r_cut_squared, 3);
         e_cut = (4 / r_cut_pow_6) * ((1/r_cut_pow_6) - 1);
+        double standard_deviation = 1 / sqrt(m*beyta);
+        gaussian = normal_distribution<double>(0.0, standard_deviation);
     }
 
     inline double rand(){
