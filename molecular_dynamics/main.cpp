@@ -1,8 +1,12 @@
 #include <iostream>
+#include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <math.h>
 #include <vector>
+
+#include <chrono>
+#include <thread>
 
 #include "mt19937.h"
 
@@ -218,10 +222,12 @@ int main(){
     dynamics md(100, 0.0001, 10);
     md.initialize_positions_velocities();
     md.write_positions_to_file();
-    for(int i=0; i<1000; i++){
+    int total_steps = 1000;
+    for(int i=2; i<total_steps; i++){
         md.verlet_step();
         md.update_kinetic_energy();
         md.write_positions_to_file();
         md.write_state_variables_to_file();
+        cout << "\r [" << std::setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
     }
 }
