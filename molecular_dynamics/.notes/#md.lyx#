@@ -248,7 +248,7 @@ In our case, since
 \end_layout
 
 \begin_layout Standard
-To implement the Andersen thermostat, at each timestep, each particle has
+To implement the Andersen thermostat, at each time step, each particle has
  a probability of 
 \begin_inset Formula $\nu\Delta t$
 \end_inset

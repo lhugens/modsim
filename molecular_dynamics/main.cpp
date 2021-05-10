@@ -13,28 +13,28 @@ using namespace std;
 #define ndim 3
 
 struct dynamics{
-    int npart;                  // number of particles
-    int step = 0;               // current time step of the simulation
-    double box_l;               // (cubic) box side length
-    double r_cut_squared;       // cut-off square distance of the potential
-    double e_cut;               // cut-off energy of the potential
-    double dt;                  // time step
-    double m = 1;               // particle mass
-    double beyta = 0.5;         // beyta = 1 / (k_B * T)
-    double force_coefficient;   // force coefficient
-    double kinetic_energy;      // total kinetic_energy of the system
-    double potential_energy;    // total potential_energy of the system
-    vector<vector<double>> r;   // array to store particle positions at t
-    vector<vector<double>> dr;  // array to store particle displacement
-    vector<vector<double>> f;   // array to store total force acting on each particle
-    default_random_engine gen;
-    normal_distribution<double> gaussian;
+    int npart;                            // number of particles
+    int step = 0;                         // current time step of the simulation
+    double box_l;                         // (cubic) box side length
+    double r_cut_squared;                 // cut-off square distance of the potential
+    double e_cut;                         // cut-off energy of the potential
+    double dt;                            // time step
+    double m = 1;                         // particle mass
+    double beyta = 0.5;                   // beyta = 1 / (k_B * T)
+    double nu;                            // frequency of stochastic collisions
+    double andersen_probability;          // frequency of stochastic collisions
+    double force_coefficient;             // force coefficient
+    double kinetic_energy;                // total kinetic_energy of the system
+    double potential_energy;              // total potential_energy of the system
+    vector<vector<double>> r;             // array to store particle positions at t
+    vector<vector<double>> dr;            // array to store particle displacement
+    vector<vector<double>> f;             // array to store total force acting on each particle
+    default_random_engine gen;            // random_seed 
+    normal_distribution<double> gaussian; // gaussian distribution
     ofstream file;
 
-
-
-    dynamics(int NPART, double DT, double BOX_L) :
-        npart(NPART), dt(DT), box_l(BOX_L)
+    dynamics(int NPART, double DT, double BOX_L, double NU) :
+        npart(NPART), dt(DT), box_l(BOX_L), nu(NU)
     {
         force_coefficient = pow(dt, 2) / m;
         r.resize(npart, vector<double>(ndim));
@@ -48,13 +48,14 @@ struct dynamics{
         e_cut = (4 / r_cut_pow_6) * ((1/r_cut_pow_6) - 1);
         double standard_deviation = 1 / sqrt(m*beyta);
         gaussian = normal_distribution<double>(0.0, standard_deviation);
+        andersen_probability = nu*dt;
     }
 
     inline double rand(){
         return dsfmt_genrand();
     }
 
-    inline double boltzmann_rand(){
+    inline double boltzmann_velocity(){
         return gaussian(gen);
     }
 
@@ -64,7 +65,7 @@ struct dynamics{
         file << 1 / sqrt(m*beyta) << endl;
 
         for(int i=0; i<1000000; i++){
-            file << boltzmann_rand() << endl;
+            file << boltzmann_velocity() << endl;
         }
 
         file.close();
@@ -212,6 +213,15 @@ struct dynamics{
         }
     }
 
+    void update_kinetic_energy(){
+        kinetic_energy = 0;
+        for(int k=0; k<npart; k++){
+            for(int l=0; l<ndim; l++){
+                kinetic_energy += m * pow((dr[k][l] / dt), 2) / 2;
+            }
+        }
+    }
+
     void verlet_step(){
         step += 1;
         update_forces();
@@ -226,11 +236,12 @@ struct dynamics{
         }
     }
 
-    void update_kinetic_energy(){
-        kinetic_energy = 0;
-        for(int k=0; k<npart; k++){
-            for(int l=0; l<ndim; l++){
-                kinetic_energy += m * pow((dr[k][l] / dt), 2) / 2;
+    void apply_andersen_thermostat(){
+        for(int i=0; i<npart; i++){
+            if(rand() < andersen_probability){
+                for(int k=0; k<ndim; k++){
+                    dr[i][k] = boltzmann_velocity() * dt;
+                }
             }
         }
     }
@@ -238,7 +249,7 @@ struct dynamics{
 };
 
 int main(){
-    dynamics md(100, 0.00001, 5);
+    dynamics md(100, 0.00001, 5, 1);
     md.test_boltzmann_distribution();
     /*
     md.initialize_positions_velocities();
