@@ -102,6 +102,10 @@ Leonardo Hügens
 l.lobatodiasleitehugens@students.uu.nl
 \end_layout
 
+\begin_layout Subsection*
+Verlet Algorithm
+\end_layout
+
 \begin_layout Standard
 The original Verlet Algorithm is
 \begin_inset Formula 
@@ -144,10 +148,148 @@ This brings up a problem with boundary conditions.
 
  of this new iteration, producing unintentional big jumps.
  Thus, we rewrote this algorithm in terms of a displacement 
-\begin_inset Formula $dr(t,t-\Delta t)=$
+\begin_inset Formula $dr(t,t-\Delta t)=r(t)-r(t-\Delta t)$
 \end_inset
 
- 
+, which gives:
+\begin_inset Formula 
+\begin{align*}
+r(t+\Delta t) & =r(t)+dr(t,t-\Delta t)+\frac{f(t)}{m}\Delta t^{2}\\
+dr(t+\Delta t,t) & =dr(t,t-\Delta t)+\frac{f(t)}{m}\Delta t^{2}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Thus, instead of always storing two consecutive positions, we store the
+ last position and the last displacement: update the displacement using
+ the equation above and adding that displacement to the last position to
+ get the new position.
+\end_layout
+
+\begin_layout Subsection*
+Lennard-Jones Interaction
+\end_layout
+
+\begin_layout Standard
+The Lennard-Jones potential we are considering is:
+\begin_inset Formula 
+\[
+u\left(r_{ij}\right)=\left\{ \begin{array}{ll}
+4\epsilon\left[\left(\frac{\sigma}{r_{ij}}\right)^{12}-\left(\frac{\sigma}{r_{ij}}\right)^{6}\right]-e_{\mathrm{cut}} & r_{ij}\leq r_{\mathrm{cut}}\\
+0 & r_{ij}>r_{\mathrm{cut}}
+\end{array}\right.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where
+\begin_inset Formula 
+\[
+e_{\mathrm{cut}}=4\epsilon\left[\left(\frac{\sigma}{r_{\mathrm{cut}}}\right)^{12}-\left(\frac{\sigma}{r_{\mathrm{cut}}}\right)^{6}\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To obtain the force, we can just calculate the gradient of this potential.
+ Denoting 
+\begin_inset Formula $\boldsymbol{r}_{ij}=\boldsymbol{r}_{i}-\boldsymbol{r}_{j}$
+\end_inset
+
+, this gives:
+\begin_inset Formula 
+\[
+\boldsymbol{f}_{ij}=48\frac{\boldsymbol{r}_{ij}}{r_{ij}^{8}}\left(\frac{1}{r_{ij}^{6}}-\frac{1}{2}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Andersen Thermostat
+\end_layout
+
+\begin_layout Standard
+We want to make an evolution of the system such that it conserves the temperatur
+e, which can be obmtain by the total kinetic energy by:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+E_{kin}=\sum_{i=1}^{N}\frac{mv_{i}^{2}}{2}=\frac{3Nk_{B}T}{2}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In our case, since 
+\begin_inset Formula $N$
+\end_inset
+
+ is constant, conserving temperature happens if and only if kinetic energy
+ conservation happens.
+\end_layout
+
+\begin_layout Standard
+To implement the Andersen thermostat, at each timestep, each particle has
+ a probability of 
+\begin_inset Formula $\nu\Delta t$
+\end_inset
+
+ of being selected to receive a new velocity, drawn from the Maxwell-Boltzmann
+ distribution at the desired temperature.
+ So 
+\begin_inset Formula $\nu$
+\end_inset
+
+ is the frequency of stochastic collisions (the higher, the more couple
+ the system is to the 
+\begin_inset Quotes bld
+\end_inset
+
+heat bath
+\begin_inset Quotes brd
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+The Maxwell-Boltzmann distribution for each component of the velocity is
+ given by:
+\begin_inset Formula 
+\[
+f\left(v_{i}\right)=\sqrt{\frac{m}{2}\frac{\beta}{\pi}}e^{-\frac{m}{2}\beta v_{i}^{2}},
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which has mean 
+\begin_inset Formula $\mu=0$
+\end_inset
+
+ and standard deviation
 \end_layout
 
 \end_body

@@ -4,9 +4,7 @@
 #include <iomanip>
 #include <math.h>
 #include <vector>
-
-#include <chrono>
-#include <thread>
+#include <random>
 
 #include "mt19937.h"
 
@@ -29,7 +27,11 @@ struct dynamics{
     vector<vector<double>> r;   // array to store particle positions at t
     vector<vector<double>> dr;  // array to store particle displacement
     vector<vector<double>> f;   // array to store total force acting on each particle
+    double standard_deviation = 1 / sqrt(m*beyta);
+    std::default_random_engine gen;
+    std::normal_distribution<double> gaussian = normal_distribution<double>(5.0, standard_deviation);
     ofstream file;
+
 
 
     dynamics(int NPART, double DT, double BOX_L) :
@@ -49,6 +51,22 @@ struct dynamics{
 
     inline double rand(){
         return dsfmt_genrand();
+    }
+
+    inline double boltzmann_rand(){
+        return gaussian(gen);
+    }
+
+    void test_boltzmann_distribution(){
+        ofstream file;
+        file.open("boltzmann.txt");
+        file << 1 / sqrt(m*beyta) << endl;
+
+        for(int i=0; i<1000000; i++){
+            file << boltzmann_rand() << endl;
+        }
+
+        file.close();
     }
 
     void write_positions_to_file(){
@@ -219,15 +237,20 @@ struct dynamics{
 };
 
 int main(){
-    dynamics md(100, 0.0001, 10);
+    dynamics md(100, 0.00001, 5);
+    md.test_boltzmann_distribution();
+    /*
     md.initialize_positions_velocities();
     md.write_positions_to_file();
-    int total_steps = 1000;
+    int total_steps = 100000;
     for(int i=2; i<total_steps; i++){
         md.verlet_step();
         md.update_kinetic_energy();
         md.write_positions_to_file();
         md.write_state_variables_to_file();
-        cout << "\r [" << std::setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
+        cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
     }
+    */
+
+
 }
