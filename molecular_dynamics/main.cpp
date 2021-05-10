@@ -39,8 +39,8 @@ struct dynamics{
         file.open("state_variables.txt");
 
         r_cut_squared = pow(box_l / 3, 2);
-        double sq = pow(r_cut_squared, 3);
-        e_cut = (4 / sq) * ((1/sq) - 1);
+        double r_cut_pow_6 = pow(r_cut_squared, 3);
+        e_cut = (4 / r_cut_pow_6) * ((1/r_cut_pow_6) - 1);
     }
 
     inline double rand(){
@@ -119,16 +119,16 @@ struct dynamics{
                 sq = square_norm(rij);
                 if (sq < r_cut_squared){
                     factor = 48 * (1/pow(sq, 3) - 0.5) / pow(sq, 4);
-                    sq = pow(sq, 3);
                     for(int k=0; k<ndim; k++){
                         f[i][k] += rij[k] * factor;
                         f[j][k] -= rij[k] * factor;
-                        potential_energy += (4 / sq) * ((1/sq) - 1);
                     }
+                    sq = pow(sq, 3); // now sq = r^6
+                    potential_energy += (4 / sq) * ((1/sq) - 1);
+                    potential_energy -= e_cut;
                 }
             }
         }
-        potential_energy -= e_cut;
     }
 
     void initialize_positions_velocities(){
@@ -139,6 +139,8 @@ struct dynamics{
                 r[i][j] = box_l * rand();
             }
         }
+
+        write_positions_to_file();
 
         // randomize velocities, each component in [-1,1]
         // and compute total momentum
@@ -174,8 +176,9 @@ struct dynamics{
 
         // determine r1 based on these velocities 
         // and on calculated forces
-        double force_coefficient = pow(dt, 2) / (2*m);
         update_forces();
+
+        step += 1;
 
         for(int i=0; i<npart; i++){
             for(int j=0; j<ndim; j++){
@@ -212,13 +215,12 @@ struct dynamics{
 };
 
 int main(){
-    dynamics md(100, 0.01, 10);
+    dynamics md(100, 0.0001, 10);
     md.initialize_positions_velocities();
     md.write_positions_to_file();
     for(int i=0; i<1000; i++){
         md.verlet_step();
         md.update_kinetic_energy();
-        cout << md.potential_energy << endl;
         md.write_positions_to_file();
         md.write_state_variables_to_file();
     }

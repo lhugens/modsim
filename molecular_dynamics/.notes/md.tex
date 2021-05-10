@@ -1,0 +1,73 @@
+%% LyX 2.3.6.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[british]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=1cm,rmargin=1cm}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{setspace}
+\doublespacing
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage{indentfirst}
+\usepackage{mathtools}
+
+\makeatother
+
+\usepackage{babel}
+\begin{document}
+\title{Notes}
+\author{Leonardo Hügens\\
+l.lobatodiasleitehugens@students.uu.nl}
+
+\maketitle
+The original Verlet Algorithm is
+\[
+r(t+\Delta t)=2r(t)-r(t-\Delta t)+\frac{f(t)}{m}\Delta t^{2}.
+\]
+
+This brings up a problem with boundary conditions. It is perfectly
+possible that $r(t)$ and $r(t-\Delta t)$ but $r(t+\Delta t)$ falls
+outside the box. After applying boundary conditions, the new $r(t+\Delta t)$
+is typically far away from the original one. In the new iteration,
+this new position will correspond to $r(t)$, and it will be very
+far away from the $r(t-\Delta t)$ of this new iteration, producing
+unintentional big jumps. Thus, we rewrote this algorithm in terms
+of a displacement $dr(t,t-\Delta t)=r(t)-r(t-\Delta t)$, which gives:
+\begin{align*}
+r(t+\Delta t) & =r(t)+dr(t,t-\Delta t)+\frac{f(t)}{m}\Delta t^{2}\\
+dr(t+\Delta t,t) & =dr(t,t-\Delta t)+\frac{f(t)}{m}\Delta t^{2}
+\end{align*}
+
+Thus, instead of always storing two consecutive positions, we store
+the last position and the last displacement: update the displacement
+using the equation above and adding that displacement to the last
+position to get the new position.
+
+-----------------------------------
+
+The Lennard-Jones potential we are considering is:
+\[
+u\left(r_{ij}\right)=\left\{ \begin{array}{ll}
+4\epsilon\left[\left(\frac{\sigma}{r_{ij}}\right)^{12}-\left(\frac{\sigma}{r_{ij}}\right)^{6}\right]-e_{\mathrm{cut}} & r_{ij}\leq r_{\mathrm{cut}}\\
+0 & r_{ij}>r_{\mathrm{cut}}
+\end{array}\right.
+\]
+
+where
+\[
+e_{\mathrm{cut}}=4\epsilon\left[\left(\frac{\sigma}{r_{\mathrm{cut}}}\right)^{12}-\left(\frac{\sigma}{r_{\mathrm{cut}}}\right)^{6}\right]
+\]
+
+To obtain the force, we can just calculate the gradient of this potential.
+Denoting $\boldsymbol{r}_{ij}=\boldsymbol{r}_{i}-\boldsymbol{r}_{j}$,
+this gives:
+\[
+\boldsymbol{f}_{ij}=48\frac{\boldsymbol{r}_{ij}}{r_{ij}^{8}}\left(\frac{1}{r_{ij}^{6}}-\frac{1}{2}\right)
+\]
+
+\end{document}
