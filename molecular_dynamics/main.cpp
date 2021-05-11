@@ -140,6 +140,8 @@ struct dynamics{
                     f[i][k] = 0;
                     f[j][k] = 0;
                 }
+                cout << "rij :" << endl;
+                print(rij);
                 sq = square_norm(rij);
                 if (sq < r_cut_squared){
                     factor = 48 * (1/pow(sq, 3) - 0.5) / pow(sq, 4);
@@ -253,7 +255,7 @@ void test_verlet(){
 
     // put the two particles on opposite ends of the box
     md.r[0][0] = 0;
-    md.r[1][0] = md.box_l;
+    md.r[1][0] = md.box_l / 2;
     for(int i=0; i<md.npart; i++){
         for(int j = 1; j<ndim; j++){
             md.r[i][j] = 0;
@@ -264,17 +266,22 @@ void test_verlet(){
     md.print(md.r);
     
     // particles going head on towards eachother
-    md.dr[0][0] =  0.1;
-    md.dr[1][0] = -0.1;
+    md.dr[0][0] =  0.01;
+    md.dr[1][0] = -0.01;
     for(int i=0; i<md.npart; i++){
         for(int j = 1; j<ndim; j++){
             md.dr[i][j] = 0;
         }
     }
 
-    int total_steps = 100;
+    cout << "particle dr's:" << endl;
+    md.print(md.dr);
+    md.update_forces();
+    md.print(md.f);
+
+    int total_steps = 1000;
     md.write_positions_to_file();
-    for(int i=2; i<total_steps; i++){
+    for(int i=0; i<total_steps; i++){
         md.verlet_step();
 //        md.update_kinetic_energy();
         md.write_positions_to_file();
