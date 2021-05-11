@@ -28,7 +28,7 @@ struct dynamics{
     double potential_energy;              // total potential_energy of the system
     int average_collisions_bath = 0.0;    // number of average collisions woth heat bath
     vector<vector<double>> r;             // array to store particle positions at t
-    vector<vector<double>> dr;            // array to store particle displacement
+    vector<vector<double>> v;             // array to store particle displacement
     vector<vector<double>> f;             // array to store total force acting on each particle
     default_random_engine gen;            // random_seed 
     normal_distribution<double> gaussian; // gaussian distribution
@@ -37,9 +37,9 @@ struct dynamics{
     dynamics(int NPART, double DT, double BOX_L, double NU) :
         npart(NPART), dt(DT), box_l(BOX_L), nu(NU)
     {
-        force_coefficient = pow(dt, 2) / m;
+        force_coefficient = pow(dt, 2) / (2*m);
         r.resize(npart, vector<double>(ndim));
-        dr.resize(npart, vector<double>(ndim));
+        v.resize(npart, vector<double>(ndim));
         f.resize(npart, vector<double>(ndim));
         dsfmt_seed(time(NULL));
         file.open("state_variables.txt");
@@ -167,51 +167,36 @@ struct dynamics{
             }
         }
 
-        write_positions_to_file();
+        update_forces();
 
         // randomize velocities, each component in [-1,1]
         // and compute total momentum
-        vector<vector<double>> v0(npart, vector<double>(ndim));
         vector<double> P(ndim);
 
         for(int j=0; j<ndim; j++){
             for(int i=0; i<npart; i++){
-                v0[i][j] = rand() * 2 - 1;
-                P[j] += v0[i][j];
+                v[i][j] = rand() * 2 - 1;
+                P[j] += v[i][j];
             }
         }
 
         // shift velocities s.t. total momentum is 0
         for(int j=0; j<ndim; j++){
             for(int i=0; i<npart; i++){
-                v0[i][j] -= P[j] / (double)npart;
+                v[i][j] -= P[j] / (double)npart;
             }
         }
 
         // scale velocities s.t. E_kinetic = 3 N k_B T / 2
         double sum_square_speeds = 0;
         for(int i=0; i<npart; i++){
-            sum_square_speeds += square_norm(v0[i]);
+            sum_square_speeds += square_norm(v[i]);
         }
         double scaling_factor = sqrt(3 * npart / (beyta * m * sum_square_speeds));
 
         for(int i=0; i<npart; i++){
             for(int j=0; j<ndim; j++){
-                v0[i][j] *= scaling_factor;
-            }
-        }
-
-        // determine r1 based on these velocities 
-        // and on calculated forces
-        update_forces();
-
-        step += 1;
-
-        for(int i=0; i<npart; i++){
-            for(int j=0; j<ndim; j++){
-                dr[i][j] = v0[i][j]*dt + f[i][j] * force_coefficient / 2;
-                r[i][j] += dr[i][j];
-                r[i][j] += box_l - box_l * (int)((box_l + r[i][j])/box_l);
+                v[i][j] *= scaling_factor;
             }
         }
     }
@@ -220,51 +205,42 @@ struct dynamics{
         kinetic_energy = 0;
         for(int k=0; k<npart; k++){
             for(int l=0; l<ndim; l++){
-                kinetic_energy += m * pow((dr[k][l] / dt), 2) / 2;
+                kinetic_energy += m * pow((v[k][l]), 2) / 2;
             }
         }
     }
 
     void verlet_step_NVE(){
         step += 1;
-        update_forces();
 
         for(int k=0; k<npart; k++){
             for(int l=0; l<ndim; l++){
-                dr[k][l] += f[k][l] * force_coefficient;
-                r[k][l] += dr[k][l];
+                r[k][l] += v[k][l] * dt + f[k][l] * force_coefficient;
+                v[k][l] += f[k][l] * force_coefficient;
                 r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
             }
         }
-    }
-
-    void verlet_step_NVT(){
-        step += 1;
         update_forces();
-
         for(int k=0; k<npart; k++){
-            if(rand() < andersen_probability){
-                average_collisions_bath += 1;
-                for(int l=0; l<ndim; l++){
-                    dr[k][l] = boltzmann_velocity() * dt;
-                    r[k][l] += dr[k][l];
-                    r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
-                }
-            }
-            else{
-                for(int l=0; l<ndim; l++){
-                    dr[k][l] += f[k][l] * force_coefficient;
-                    r[k][l] += dr[k][l];
-                    r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
-                }
+            for(int l=0; l<ndim; l++){
+                v[k][l] += f[k][l] * force_coefficient;
             }
         }
     }
 
+    void thermostat(){
+        for(int i=0; i<npart; i++){
+            if(rand() < andersen_probability){
+                for(int l=0; l<ndim; l++){
+                    v[i][l] = boltzmann_velocity();
+                }
+            }
+        }
+    }
 };
 
 void test_verlet(){
-    dynamics md(2, 0.00001, 5, 1);
+    dynamics md(2, 0.001, 5, 1);
 
     // put the two particles on opposite ends of the box
     md.r[0][0] = 0;
@@ -279,20 +255,20 @@ void test_verlet(){
     md.print(md.r);
     
     // particles going head on towards eachother
-    md.dr[0][0] =  0.01;
-    md.dr[1][0] = -0.01;
+    md.v[0][0] =  1;
+    md.v[1][0] = -1;
     for(int i=0; i<md.npart; i++){
         for(int j = 1; j<ndim; j++){
-            md.dr[i][j] = 0;
+            md.v[i][j] = 0;
         }
     }
 
-    cout << "particle dr's:" << endl;
-    md.print(md.dr);
+    cout << "particle v's:" << endl;
+    md.print(md.v);
     md.update_forces();
     md.print(md.f);
 
-    int total_steps = 1000;
+    int total_steps = 10000;
     md.write_positions_to_file();
     for(int i=0; i<total_steps; i++){
         md.verlet_step_NVE();
@@ -302,27 +278,26 @@ void test_verlet(){
     }
 }
 
-void run_NVE(){
-    dynamics md(100, 0.00001, 5, 1);
+void run_NVE(int total_steps){
+    dynamics md(100, 0.0005, 5, 1);
     md.initialize_positions_velocities();
     md.write_positions_to_file();
-    int total_steps = 1000;
     for(int i=2; i<total_steps; i++){
         md.verlet_step_NVE();
-        md.write_positions_to_file();
+        //md.write_positions_to_file();
         md.write_state_variables_to_file();
         cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
     }
 }
 
-void run_NVT(){
-    dynamics md(100, 0.0001, 5, 10);
+void run_NVT(int total_steps){
+    dynamics md(100, 0.0005, 5, 10);
     md.initialize_positions_velocities();
     md.write_positions_to_file();
-    int total_steps = 1000;
     for(int i=2; i<total_steps; i++){
-        md.verlet_step_NVT();
-        md.write_positions_to_file();
+        md.verlet_step_NVE();
+        //md.thermostat();
+        //md.write_positions_to_file();
         md.write_state_variables_to_file();
         cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
     }
@@ -330,8 +305,8 @@ void run_NVT(){
 
 int main(){
     //test_verlet();
-    //run_NVE();
-    run_NVT();
+    //run_NVE(10000);
+    run_NVT(100000);
 }
 
 
