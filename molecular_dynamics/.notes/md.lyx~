@@ -166,5 +166,53 @@ Thus, instead of always storing two consecutive positions, we store the
  get the new position.
 \end_layout
 
+\begin_layout Standard
+———————————–
+\end_layout
+
+\begin_layout Standard
+The Lennard-Jones potential we are considering is:
+\begin_inset Formula 
+\[
+u\left(r_{ij}\right)=\left\{ \begin{array}{ll}
+4\epsilon\left[\left(\frac{\sigma}{r_{ij}}\right)^{12}-\left(\frac{\sigma}{r_{ij}}\right)^{6}\right]-e_{\mathrm{cut}} & r_{ij}\leq r_{\mathrm{cut}}\\
+0 & r_{ij}>r_{\mathrm{cut}}
+\end{array}\right.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where
+\begin_inset Formula 
+\[
+e_{\mathrm{cut}}=4\epsilon\left[\left(\frac{\sigma}{r_{\mathrm{cut}}}\right)^{12}-\left(\frac{\sigma}{r_{\mathrm{cut}}}\right)^{6}\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To obtain the force, we can just calculate the gradient of this potential.
+ Denoting 
+\begin_inset Formula $\boldsymbol{r}_{ij}=\boldsymbol{r}_{i}-\boldsymbol{r}_{j}$
+\end_inset
+
+, this gives:
+\begin_inset Formula 
+\[
+\boldsymbol{f}_{ij}=48\frac{\boldsymbol{r}_{ij}}{r_{ij}^{8}}\left(\frac{1}{r_{ij}^{6}}-\frac{1}{2}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
 \end_body
 \end_document

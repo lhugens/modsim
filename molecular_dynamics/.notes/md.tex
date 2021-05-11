@@ -23,8 +23,10 @@
 \title{Notes}
 \author{Leonardo Hügens\\
 l.lobatodiasleitehugens@students.uu.nl}
-
 \maketitle
+
+\subsection*{Verlet Algorithm}
+
 The original Verlet Algorithm is
 \[
 r(t+\Delta t)=2r(t)-r(t-\Delta t)+\frac{f(t)}{m}\Delta t^{2}.
@@ -48,7 +50,7 @@ the last position and the last displacement: update the displacement
 using the equation above and adding that displacement to the last
 position to get the new position.
 
------------------------------------
+\subsection*{Lennard-Jones Interaction}
 
 The Lennard-Jones potential we are considering is:
 \[
@@ -70,4 +72,31 @@ this gives:
 \boldsymbol{f}_{ij}=48\frac{\boldsymbol{r}_{ij}}{r_{ij}^{8}}\left(\frac{1}{r_{ij}^{6}}-\frac{1}{2}\right)
 \]
 
+
+\subsection*{Andersen Thermostat}
+
+We want to make an evolution of the system such that it conserves
+the temperature, which can be obmtain by the total kinetic energy
+by:
+
+\[
+E_{kin}=\sum_{i=1}^{N}\frac{mv_{i}^{2}}{2}=\frac{3Nk_{B}T}{2}.
+\]
+
+In our case, since $N$ is constant, conserving temperature happens
+if and only if kinetic energy conservation happens.
+
+To implement the Andersen thermostat, at each time step, each particle
+has a probability of $\nu\Delta t$ of being selected to receive a
+new velocity, drawn from the Maxwell-Boltzmann distribution at the
+desired temperature. So $\nu$ is the frequency of stochastic collisions
+(the higher, the more couple the system is to the `heat bath').
+
+The Maxwell-Boltzmann distribution for each component of the velocity
+is given by:
+\[
+f\left(v_{i}\right)=\sqrt{\frac{m}{2}\frac{\beta}{\pi}}e^{-\frac{m}{2}\beta v_{i}^{2}},
+\]
+
+which has mean $\mu=0$ and standard deviation
 \end{document}
