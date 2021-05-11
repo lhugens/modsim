@@ -26,6 +26,7 @@ struct dynamics{
     double force_coefficient;             // force coefficient
     double kinetic_energy;                // total kinetic_energy of the system
     double potential_energy;              // total potential_energy of the system
+    int average_collisions_bath = 0.0;    // number of average collisions woth heat bath
     vector<vector<double>> r;             // array to store particle positions at t
     vector<vector<double>> dr;            // array to store particle displacement
     vector<vector<double>> f;             // array to store total force acting on each particle
@@ -101,6 +102,7 @@ struct dynamics{
         file << left << setw(20) << step 
                      << setw(20) << kinetic_energy 
                      << setw(20) << potential_energy
+                     << setw(20) << (double)average_collisions_bath / (double)step
                      << endl;
     }
 
@@ -141,8 +143,6 @@ struct dynamics{
                     f[i][k] = 0;
                     f[j][k] = 0;
                 }
-                cout << "rij :" << endl;
-                print(rij);
                 sq = square_norm(rij);
                 if (sq < r_cut_squared){
                     factor = 48 * (1/pow(sq, 3) - 0.5) / pow(sq, 4);
@@ -225,10 +225,9 @@ struct dynamics{
         }
     }
 
-    void verlet_step(){
+    void verlet_step_NVE(){
         step += 1;
         update_forces();
-        double temp;
 
         for(int k=0; k<npart; k++){
             for(int l=0; l<ndim; l++){
@@ -239,11 +238,24 @@ struct dynamics{
         }
     }
 
-    void apply_andersen_thermostat(){
-        for(int i=0; i<npart; i++){
+    void verlet_step_NVT(){
+        step += 1;
+        update_forces();
+
+        for(int k=0; k<npart; k++){
             if(rand() < andersen_probability){
-                for(int k=0; k<ndim; k++){
-                    dr[i][k] = boltzmann_velocity() * dt;
+                average_collisions_bath += 1;
+                for(int l=0; l<ndim; l++){
+                    dr[k][l] = boltzmann_velocity() * dt;
+                    r[k][l] += dr[k][l];
+                    r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
+                }
+            }
+            else{
+                for(int l=0; l<ndim; l++){
+                    dr[k][l] += f[k][l] * force_coefficient;
+                    r[k][l] += dr[k][l];
+                    r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
                 }
             }
         }
@@ -283,7 +295,7 @@ void test_verlet(){
     int total_steps = 1000;
     md.write_positions_to_file();
     for(int i=0; i<total_steps; i++){
-        md.verlet_step();
+        md.verlet_step_NVE();
         md.write_positions_to_file();
         md.write_state_variables_to_file();
         cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
@@ -296,8 +308,20 @@ void run_NVE(){
     md.write_positions_to_file();
     int total_steps = 1000;
     for(int i=2; i<total_steps; i++){
-        md.verlet_step();
-        md.update_kinetic_energy();
+        md.verlet_step_NVE();
+        md.write_positions_to_file();
+        md.write_state_variables_to_file();
+        cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
+    }
+}
+
+void run_NVT(){
+    dynamics md(100, 0.0001, 5, 10);
+    md.initialize_positions_velocities();
+    md.write_positions_to_file();
+    int total_steps = 1000;
+    for(int i=2; i<total_steps; i++){
+        md.verlet_step_NVT();
         md.write_positions_to_file();
         md.write_state_variables_to_file();
         cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
@@ -305,8 +329,9 @@ void run_NVE(){
 }
 
 int main(){
+    //test_verlet();
     //run_NVE();
-    test_verlet();
+    run_NVT();
 }
 
 
