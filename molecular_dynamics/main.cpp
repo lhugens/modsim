@@ -97,6 +97,7 @@ struct dynamics{
     }
 
     void write_state_variables_to_file(){
+        update_kinetic_energy();
         file << left << setw(20) << step 
                      << setw(20) << kinetic_energy 
                      << setw(20) << potential_energy
@@ -283,7 +284,6 @@ void test_verlet(){
     md.write_positions_to_file();
     for(int i=0; i<total_steps; i++){
         md.verlet_step();
-//        md.update_kinetic_energy();
         md.write_positions_to_file();
         md.write_state_variables_to_file();
         cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
