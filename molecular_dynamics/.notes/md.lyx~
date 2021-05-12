@@ -102,6 +102,10 @@ Leonardo Hügens
 l.lobatodiasleitehugens@students.uu.nl
 \end_layout
 
+\begin_layout Subsection*
+Verlet Algorithm
+\end_layout
+
 \begin_layout Standard
 The original Verlet Algorithm is
 \begin_inset Formula 
@@ -166,8 +170,8 @@ Thus, instead of always storing two consecutive positions, we store the
  get the new position.
 \end_layout
 
-\begin_layout Standard
-———————————–
+\begin_layout Subsection*
+Lennard-Jones Interaction
 \end_layout
 
 \begin_layout Standard
@@ -212,6 +216,80 @@ To obtain the force, we can just calculate the gradient of this potential.
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsection*
+Andersen Thermostat
+\end_layout
+
+\begin_layout Standard
+We want to make an evolution of the system such that it conserves the temperatur
+e, which can be obmtain by the total kinetic energy by:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+E_{kin}=\sum_{i=1}^{N}\frac{mv_{i}^{2}}{2}=\frac{3Nk_{B}T}{2}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In our case, since 
+\begin_inset Formula $N$
+\end_inset
+
+ is constant, conserving temperature happens if and only if kinetic energy
+ conservation happens.
+\end_layout
+
+\begin_layout Standard
+To implement the Andersen thermostat, at each time step, each particle has
+ a probability of 
+\begin_inset Formula $\nu\Delta t$
+\end_inset
+
+ of being selected to receive a new velocity, drawn from the Maxwell-Boltzmann
+ distribution at the desired temperature.
+ So 
+\begin_inset Formula $\nu$
+\end_inset
+
+ is the frequency of stochastic collisions (the higher, the more couple
+ the system is to the 
+\begin_inset Quotes bld
+\end_inset
+
+heat bath
+\begin_inset Quotes brd
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+The Maxwell-Boltzmann distribution for each component of the velocity is
+ given by:
+\begin_inset Formula 
+\[
+f\left(v_{i}\right)=\sqrt{\frac{m}{2}\frac{\beta}{\pi}}e^{-\frac{m}{2}\beta v_{i}^{2}},
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which has mean 
+\begin_inset Formula $\mu=0$
+\end_inset
+
+ and standard deviation
 \end_layout
 
 \end_body

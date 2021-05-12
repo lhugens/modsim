@@ -20,7 +20,7 @@ struct dynamics{
     double e_cut;                         // cut-off energy of the potential
     double dt;                            // time step
     double m = 1;                         // particle mass
-    double beyta = 0.5;                   // beyta = 1 / (k_B * T)
+    double beyta = 50;                     // beyta = 1 / (k_B * T)
     double nu;                            // frequency of stochastic collisions
     double andersen_probability;          // frequency of stochastic collisions
     double force_coefficient;             // force coefficient
@@ -37,13 +37,13 @@ struct dynamics{
     dynamics(int NPART, double DT, double BOX_L, double NU) :
         npart(NPART), dt(DT), box_l(BOX_L), nu(NU)
     {
-        force_coefficient = pow(dt, 2) / (2*m);
         r.resize(npart, vector<double>(ndim));
         v.resize(npart, vector<double>(ndim));
         f.resize(npart, vector<double>(ndim));
         dsfmt_seed(time(NULL));
         file.open("state_variables.txt");
 
+        force_coefficient = pow(dt, 2) / (2*m);
         r_cut_squared = pow(box_l / 3, 2);
         double r_cut_pow_6 = pow(r_cut_squared, 3);
         e_cut = (4 / r_cut_pow_6) * ((1/r_cut_pow_6) - 1);
@@ -216,14 +216,14 @@ struct dynamics{
         for(int k=0; k<npart; k++){
             for(int l=0; l<ndim; l++){
                 r[k][l] += v[k][l] * dt + f[k][l] * force_coefficient;
-                v[k][l] += f[k][l] * force_coefficient;
+                v[k][l] += f[k][l] * dt / (2*m);
                 r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
             }
         }
         update_forces();
         for(int k=0; k<npart; k++){
             for(int l=0; l<ndim; l++){
-                v[k][l] += f[k][l] * force_coefficient;
+                v[k][l] += f[k][l] * dt / (2*m);
             }
         }
     }
