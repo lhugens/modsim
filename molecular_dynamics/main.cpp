@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <math.h>
@@ -20,9 +19,10 @@ struct dynamics{
     double e_cut;                         // cut-off energy of the potential
     double dt;                            // time step
     double m = 1;                         // particle mass
-    double beyta = 50;                     // beyta = 1 / (k_B * T)
+    double beyta = 2;                     // beyta = 1 / (k_B * T)
     double nu;                            // frequency of stochastic collisions
-    double andersen_probability;          // frequency of stochastic collisions
+    double andersen_probability;          // probability of colliding with heat bath
+    double diameter;                      // particle diameter
     double force_coefficient;             // force coefficient
     double kinetic_energy;                // total kinetic_energy of the system
     double potential_energy;              // total potential_energy of the system
@@ -37,19 +37,27 @@ struct dynamics{
     dynamics(int NPART, double DT, double BOX_L, double NU) :
         npart(NPART), dt(DT), box_l(BOX_L), nu(NU)
     {
+        dsfmt_seed(time(NULL));
+
         r.resize(npart, vector<double>(ndim));
         v.resize(npart, vector<double>(ndim));
         f.resize(npart, vector<double>(ndim));
-        dsfmt_seed(time(NULL));
+
         file.open("state_variables.txt");
 
         force_coefficient = pow(dt, 2) / (2*m);
+
+        andersen_probability = nu*dt;
+
+        diameter = box_l / 20;
+
         r_cut_squared = pow(box_l / 3, 2);
         double r_cut_pow_6 = pow(r_cut_squared, 3);
         e_cut = (4 / r_cut_pow_6) * ((1/r_cut_pow_6) - 1);
+
         double standard_deviation = 1 / sqrt(m*beyta);
         gaussian = normal_distribution<double>(0.0, standard_deviation);
-        andersen_probability = nu*dt;
+
     }
 
     inline double rand(){
@@ -92,7 +100,7 @@ struct dynamics{
             for(int j=0; j<ndim; j++){
                 file << setw(20) << r[i][j];
             }
-            file << setw(20) << 0.5 << endl;
+            file << setw(20) << box_l/20 << endl;
         }
         file.close();
     }
@@ -102,6 +110,7 @@ struct dynamics{
         file << left << setw(20) << step 
                      << setw(20) << kinetic_energy 
                      << setw(20) << potential_energy
+                     << setw(20) << kinetic_energy + potential_energy
                      << setw(20) << (double)average_collisions_bath / (double)step
                      << endl;
     }
@@ -131,21 +140,27 @@ struct dynamics{
     }
 
     void update_forces(){
-        double sq, factor;
         potential_energy = 0;
+        double sq, factor;
         vector<double> rij(ndim);
+
+        for(int i=0; i<npart; i++){
+            for(int j=0; j<ndim; j++){
+                f[i][j] = 0.0;
+            }
+        }
 
         for(int i=0; i<npart-1; i++){
             for(int j=i+1; j<npart; j++){
                 for(int k=0; k<ndim; k++){
                     rij[k]  = r[i][k]-r[j][k];
                     rij[k] -= round(rij[k] / box_l) * box_l; // periodic boundary conditions
-                    f[i][k] = 0;
-                    f[j][k] = 0;
                 }
+
                 sq = square_norm(rij);
+
                 if (sq < r_cut_squared){
-                    factor = 48 * (1/pow(sq, 3) - 0.5) / pow(sq, 4);
+                    factor = 48 * ((1/pow(sq, 3)) - 0.5) / pow(sq, 4);
                     for(int k=0; k<ndim; k++){
                         f[i][k] += rij[k] * factor;
                         f[j][k] -= rij[k] * factor;
@@ -200,7 +215,7 @@ struct dynamics{
             }
         }
     }
-
+  
     void update_kinetic_energy(){
         kinetic_energy = 0;
         for(int k=0; k<npart; k++){
@@ -217,7 +232,8 @@ struct dynamics{
             for(int l=0; l<ndim; l++){
                 r[k][l] += v[k][l] * dt + f[k][l] * force_coefficient;
                 v[k][l] += f[k][l] * dt / (2*m);
-                r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
+                //r[k][l] += box_l - box_l * (int)((box_l + r[k][l])/box_l);
+                r[k][l] -= box_l * floor(r[k][l]/box_l);
             }
         }
         update_forces();
@@ -278,23 +294,24 @@ void test_verlet(){
     }
 }
 
-void run_NVE(int total_steps){
-    dynamics md(100, 0.0005, 5, 1);
+void run_NVE(int total_steps, int NPART, double DT, double BOX_L){
+    dynamics md(NPART, DT, BOX_L, 1);
     md.initialize_positions_velocities();
     md.write_positions_to_file();
+    md.verlet_step_NVE();
     for(int i=2; i<total_steps; i++){
         md.verlet_step_NVE();
-        //md.write_positions_to_file();
+        md.write_positions_to_file();
         md.write_state_variables_to_file();
         cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
     }
 }
 
-void run_NVT(int total_steps){
-    dynamics md(100, 0.0005, 5, 10);
+void run_NVT(int total_steps, int NPART, double DT, double BOX_L, double NU){
+    dynamics md(NPART, DT, BOX_L, NU);
     md.initialize_positions_velocities();
     md.write_positions_to_file();
-    for(int i=2; i<total_steps; i++){
+    for(int i=1; i<total_steps; i++){
         md.verlet_step_NVE();
         //md.thermostat();
         //md.write_positions_to_file();
@@ -305,16 +322,6 @@ void run_NVT(int total_steps){
 
 int main(){
     //test_verlet();
-    //run_NVE(10000);
-    run_NVT(100000);
+    run_NVE(10000, 100, 0.005, 50);
+    //run_NVT(10000);
 }
-
-
-
-
-
-
-
-
-
-

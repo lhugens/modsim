@@ -1,0 +1,107 @@
+%% LyX 2.3.6.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[british]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2cm,bmargin=2cm,lmargin=1cm,rmargin=1cm}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{setspace}
+\doublespacing
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage{indentfirst}
+\usepackage{mathtools}
+
+\makeatother
+
+\usepackage{babel}
+\begin{document}
+\title{Molecular Dynamics}
+\author{Leonardo Hügens and Johanna Lömker}
+\maketitle
+
+\section{Methods}
+
+Molecular Dynamics simulations consist in numerically integrating
+the equations of motion of a system, starting from an initial configuration,
+and measuring time averages of quantities of interest.
+
+\subsection{Initial Conditions}
+
+Our system consists of $N$ particles in a cubic box $\left[0,L\right]^{3}$.
+The initial positions where chosen at random with uniform probability
+inside the box.
+
+For initial velocities, we first generate every velocity component
+randomly with uniform distribution in the interval $\left[-1,1\right]$.
+We then calculate the total momentum $\boldsymbol{P}$, and shift
+all the velocities equally such that the new total momentum is $0$.
+Then, we rescale every velocity component by the same constant such
+that the total kinetic energy matches the desired temperature at which
+we want to perform our simulation:
+\[
+E_{kin}=\sum_{i=1}^{N}\frac{mv_{i}^{2}}{2}=\frac{3Nk_{B}T}{2}.
+\]
+
+
+\subsection{Particle Interaction}
+
+We consider the Lennard-Jones potential energy between every pair
+of particles, given by:
+\[
+u\left(r_{ij}\right)=\left\{ \begin{array}{ll}
+4\epsilon\left[\left(\frac{\sigma}{r_{ij}}\right)^{12}-\left(\frac{\sigma}{r_{ij}}\right)^{6}\right]-e_{\mathrm{cut}} & r_{ij}\leq r_{\mathrm{cut}}\\
+0 & r_{ij}>r_{\mathrm{cut}}
+\end{array}\right.,
+\]
+
+where
+\[
+e_{\mathrm{cut}}=4\epsilon\left[\left(\frac{\sigma}{r_{\mathrm{cut}}}\right)^{12}-\left(\frac{\sigma}{r_{\mathrm{cut}}}\right)^{6}\right]
+\]
+
+and $r_{\mathrm{cut}}$ is the maximum distance two particles can
+have from each other to still be affected by each other's potential.
+To obtain the force, we determine the gradient of this potential,
+which gives:
+\[
+\boldsymbol{f}_{ij}=-\nabla u=-48\frac{\boldsymbol{r}_{ij}}{r_{ij}^{8}}\left(\frac{1}{r_{ij}^{6}}-\frac{1}{2}\right)
+\]
+
+
+\subsection{Integration Scheme}
+
+The integration scheme we used in this assignment is the \emph{Velocity
+Verlet} algorithm, whose recursive process for each particle goes
+as follows, given it's position $\boldsymbol{r}\left(t\right)$, velocity
+$\boldsymbol{v}\left(t\right)$ and force acting on it $\boldsymbol{f}(t)$:
+\begin{align*}
+\boldsymbol{r}(t+dt) & =\boldsymbol{r}\left(t\right)+\boldsymbol{v}\left(t\right)dt+\frac{\boldsymbol{f}(t)}{2m}dt^{2}\\
+\boldsymbol{v}\left(t+dt\right) & =\boldsymbol{v}\left(t\right)+\frac{1}{2m}\left(\boldsymbol{f}(t)+\boldsymbol{f}(t+dt)\right)
+\end{align*}
+
+We also apply periodic boundary conditions, not only implicitly in
+the calculation of the force but also explicitly in the position updates
+(apply them when a particles falls outside the box), such that all
+positions are always inside the box.
+
+\subsection{NVE and NVT}
+
+For the NVE ensemble, we just run the simulation as described above,
+storing $E_{kin}$and $E_{potential}$ at every time step. For the
+NVT ensemble, we define a frequency $\nu$, and at every time step
+select each particle with probability $\nu\,dt$ to `undergo a collision
+with a heat bath at temperature $T$', which in practice means setting
+its component's values to randomly generated ones according to the
+Maxwell-Boltzmann distribution:
+\[
+f\left(v_{i}\right)=\sqrt{\frac{m}{2}\frac{\beta}{\pi}}e^{-\frac{m}{2}\beta v_{i}^{2}},
+\]
+
+which is a gaussian distribution with mean $\mu=0$ and standard deviation
+$\sigma=\frac{1}{\beta m}$.
+\end{document}
