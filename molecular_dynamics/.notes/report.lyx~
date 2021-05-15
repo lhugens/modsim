@@ -248,5 +248,64 @@ on of the force but also explicitly in the position updates (apply them
  inside the box.
 \end_layout
 
+\begin_layout Subsection
+NVE and NVT
+\end_layout
+
+\begin_layout Standard
+For the NVE ensemble, we just run the simulation as described above, storing
+ 
+\begin_inset Formula $E_{kin}$
+\end_inset
+
+and 
+\begin_inset Formula $E_{potential}$
+\end_inset
+
+ at every time step.
+ For the NVT ensemble, we define a frequency 
+\begin_inset Formula $\nu$
+\end_inset
+
+, and at every time step select each particle with probability 
+\begin_inset Formula $\nu\,dt$
+\end_inset
+
+ to 
+\begin_inset Quotes bld
+\end_inset
+
+undergo a collision with a heat bath at temperature 
+\begin_inset Formula $T$
+\end_inset
+
+
+\begin_inset Quotes brd
+\end_inset
+
+, which in practice means setting its component's values to randomly generated
+ ones according to the Maxwell-Boltzmann distribution:
+\begin_inset Formula 
+\[
+f\left(v_{i}\right)=\sqrt{\frac{m}{2}\frac{\beta}{\pi}}e^{-\frac{m}{2}\beta v_{i}^{2}},
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which is a gaussian distribution with mean 
+\begin_inset Formula $\mu=0$
+\end_inset
+
+ and standard deviation 
+\begin_inset Formula $\sigma=\frac{1}{\beta m}$
+\end_inset
+
+.
+\end_layout
+
 \end_body
 \end_document

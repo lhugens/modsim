@@ -26,7 +26,7 @@ struct dynamics{
     double force_coefficient;             // force coefficient
     double kinetic_energy;                // total kinetic_energy of the system
     double potential_energy;              // total potential_energy of the system
-    int average_collisions_bath = 0.0;    // number of average collisions woth heat bath
+    int average_collisions_bath = 0;      // number of average collisions woth heat bath
     vector<vector<double>> r;             // array to store particle positions at t
     vector<vector<double>> v;             // array to store particle displacement
     vector<vector<double>> f;             // array to store total force acting on each particle
@@ -247,6 +247,7 @@ struct dynamics{
     void thermostat(){
         for(int i=0; i<npart; i++){
             if(rand() < andersen_probability){
+                average_collisions_bath++;
                 for(int l=0; l<ndim; l++){
                     v[i][l] = boltzmann_velocity();
                 }
@@ -301,7 +302,7 @@ void run_NVE(int total_steps, int NPART, double DT, double BOX_L){
     md.verlet_step_NVE();
     for(int i=2; i<total_steps; i++){
         md.verlet_step_NVE();
-        md.write_positions_to_file();
+        //md.write_positions_to_file();
         md.write_state_variables_to_file();
         cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
     }
@@ -313,7 +314,7 @@ void run_NVT(int total_steps, int NPART, double DT, double BOX_L, double NU){
     md.write_positions_to_file();
     for(int i=1; i<total_steps; i++){
         md.verlet_step_NVE();
-        //md.thermostat();
+        md.thermostat();
         //md.write_positions_to_file();
         md.write_state_variables_to_file();
         cout << "\r [" << setw(3) << round((double)i * 100 /total_steps)  << "%] " << flush;
@@ -322,6 +323,6 @@ void run_NVT(int total_steps, int NPART, double DT, double BOX_L, double NU){
 
 int main(){
     //test_verlet();
-    run_NVE(10000, 100, 0.005, 50);
-    //run_NVT(10000);
+    run_NVE(100000, 100, 0.001, 50);
+    //run_NVT(100000, 100, 0.001, 50, 50);
 }
