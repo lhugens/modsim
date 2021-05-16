@@ -121,6 +121,10 @@ Our system consists of
 \begin_inset Formula $\left[0,L\right]^{3}$
 \end_inset
 
+, which gives a particle density of 
+\begin_inset Formula $\rho=\frac{N}{L^{3}}$
+\end_inset
+
 .
  The initial positions where chosen at random with uniform probability inside
  the box.
@@ -195,11 +199,26 @@ and
 
  is the maximum distance two particles can have from each other to still
  be affected by each other's potential.
- To obtain the force, we determine the gradient of this potential, which
+ In our simulations, we set 
+\begin_inset Formula $r_{\text{cut}}=\frac{L}{3}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+To obtain the force, we determine the gradient of this potential, which
  gives:
+\end_layout
+
+\begin_layout Standard
 \begin_inset Formula 
 \[
-\boldsymbol{f}_{ij}=-\nabla u=-48\frac{\boldsymbol{r}_{ij}}{r_{ij}^{8}}\left(\frac{1}{r_{ij}^{6}}-\frac{1}{2}\right)
+\boldsymbol{f}_{ij}=-\nabla u=\left\{ \begin{array}{ll}
+-48\frac{\boldsymbol{r}_{ij}}{r_{ij}^{8}}\left(\frac{1}{r_{ij}^{6}}-\frac{1}{2}\right) & r_{ij}\leq r_{\mathrm{cut}}\\
+0 & r_{ij}>r_{\mathrm{cut}}
+\end{array}\right.,
 \]
 
 \end_inset
@@ -305,6 +324,26 @@ which is a gaussian distribution with mean
 \end_inset
 
 .
+ 
+\end_layout
+
+\begin_layout Standard
+More specifically, right after we perform the a verlet step, we generate
+ a random number in 
+\begin_inset Formula $[0,1]$
+\end_inset
+
+ with uniform probability, and if it less than the Andersen probability
+ 
+\begin_inset Formula $\nu\,dt$
+\end_inset
+
+ we update that particles velocity components, each with a random value
+ according to 
+\begin_inset Formula $f\left(v_{i}\right)$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Subsection
@@ -320,24 +359,11 @@ The velocity autocorrelation function for a given time difference
 \begin_inset Formula $N$
 \end_inset
 
- particles, is given by:
-\begin_inset Formula 
-\[
-\chi\left(\Delta t\right)=\langle\vec{v}(t)\cdot\vec{v}(t+\Delta t)\rangle=\frac{1}{M}\sum_{v=1}^{M}\frac{1}{N}\sum_{i=1}^{N}\vec{v}_{i}\left(t_{v}\right)\cdot\vec{v}_{i}\left(t_{v}+\Delta t\right)
-\]
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-To be easier to see how this is applied in our simulation, for a run of
- length 
+ particles, and a run of length 
 \begin_inset Formula $T$
 \end_inset
 
-, we can write this as:
+, is given by:
 \begin_inset Formula 
 \[
 \chi\left(\Delta t\right)=\frac{1}{N}\sum_{i=1}^{N}\frac{1}{T-\Delta t}\sum_{t=1}^{T-\Delta t}\boldsymbol{v}_{i}\left(t\right).\boldsymbol{v}_{i}\left(t+\Delta t\right)
@@ -346,6 +372,800 @@ To be easier to see how this is applied in our simulation, for a run of
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+With it, the diffusion coefficient 
+\begin_inset Formula $D$
+\end_inset
+
+ is given by the Green-Kubo relation, where 
+\begin_inset Formula $d$
+\end_inset
+
+ is the system's dimensionality (3 in our case):
+\begin_inset Formula 
+\[
+D=\frac{1}{d}\int_{0}^{\infty}dt\,\chi\left(t\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Subsection
+NVE ensemble
+\end_layout
+
+\begin_layout Standard
+In our first NVE simulations, we we're using 
+\begin_inset Formula $L=5$
+\end_inset
+
+ or 
+\begin_inset Formula $L=10$
+\end_inset
+
+ and 
+\begin_inset Formula $N=100$
+\end_inset
+
+, which created some divergences in 
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ and 
+\begin_inset Formula $E_{pot}$
+\end_inset
+
+.
+ Of course this was due to the average distance between particles in this
+ configuration being too small, being easy for two particles to be too close
+ (and thus have a huge potential energy) either right at the start of the
+ simulation, when positions are generated randomly, or at any other instant
+ of the simulation.
+ Thus, we thought the most sensible thing to do was to use a higher 
+\begin_inset Formula $L$
+\end_inset
+
+ and low density, to minimize the possibility of two particles being generated
+ too close to each other at the start.
+ We also used a not very high temperature, such that initial velocities
+ are not too high, which prevents particles from colliding so fast that
+ would make our time step of 
+\begin_inset Formula $dt=0.001$
+\end_inset
+
+ too high.
+ Thus, we changed to 
+\begin_inset Formula $L=25$
+\end_inset
+
+, which gives density of 
+\begin_inset Formula $\rho=0.0064$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVE_results/NVE_kinetic.png
+	lyxscale 10
+	width 50text%
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVE_results/NVE_potential.png
+	lyxscale 10
+	width 50text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ and 
+\begin_inset Formula $E_{pot}$
+\end_inset
+
+ values for the NVE ensemble, with 
+\begin_inset Formula $N=100$
+\end_inset
+
+, 
+\begin_inset Formula $\beta=2$
+\end_inset
+
+, 
+\begin_inset Formula $\rho=0.0064$
+\end_inset
+
+, 
+\begin_inset Formula $L=25$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Let's analyze the plots above.
+ Firstly, we have a visual confirmation that the way we initialized the
+ velocities is correct, because the 
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ initial value should be 
+\begin_inset Formula $\frac{3}{2}\frac{N}{\beta}$
+\end_inset
+
+, which is 75 for the values we used for 
+\begin_inset Formula $N$
+\end_inset
+
+ and 
+\begin_inset Formula $\beta$
+\end_inset
+
+, and that is exactly the starting value that we see in the plot.
+ Secondly, we can see roughly see that 
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ and 
+\begin_inset Formula $E_{pot}$
+\end_inset
+
+ have opposed behaviors, which is to expect from the NVE ensemble, because
+ it's what we'd expect from a constant total energy.
+ This is confirmed by the plot below, where we see that the total energy
+ has a very low fluctuation in percentage around a value which is 
+\begin_inset Formula $\approx70.93$
+\end_inset
+
+.
+ We can also see that the values of 
+\begin_inset Formula $E_{pot}$
+\end_inset
+
+ are negative.
+ For 
+\begin_inset Formula $N=100$
+\end_inset
+
+, this implies not all particles are separated from each other by a distance
+ in the 
+\begin_inset Quotes bld
+\end_inset
+
+sweet spot
+\begin_inset Quotes brd
+\end_inset
+
+ range where the potential energy has a minimum, but most of them are, which
+ makes sense since the initial velocities are low enough for the particles
+ to converge to those spots instead of heading onto each other quickly and
+ bouncing back outside that range.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVE_results/NVE_total.png
+	lyxscale 10
+	width 60text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Total Energy values for the NVE ensemble, with 
+\begin_inset Formula $N=100$
+\end_inset
+
+, 
+\begin_inset Formula $\beta=2$
+\end_inset
+
+, 
+\begin_inset Formula $\rho=0.0064$
+\end_inset
+
+, 
+\begin_inset Formula $L=25$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+NVT ensemble
+\end_layout
+
+\begin_layout Standard
+For the NVT ensemble, we first wanted to check if the thermostat was working
+ correctly, so firstly we generated a lot of samples with the Maxwell Boltzmann
+ distribution we intended to use in the simulations and plotted a normalized
+ histogram of the samples, which came out as desired, represented in the
+ Figure below:
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename boltzmann.png
+	lyxscale 10
+	width 60text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Maxwell-Boltzmann histogram
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Secondly, we wanted to make sure that per time step 
+\begin_inset Formula $N\,\nu\,dt$
+\end_inset
+
+ particles where chosen by the thermostat to change their velocity to a
+ Boltzmann one, so we performed a simulation and plotted the average number
+ of particles, which also came out as desired:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVT_results/NVT_thermostat.png
+	lyxscale 10
+	width 60text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Average number of particles colliding with the heat bath per time step,
+ with 
+\begin_inset Formula $N=100$
+\end_inset
+
+, 
+\begin_inset Formula $\nu=50$
+\end_inset
+
+, 
+\begin_inset Formula $dt=0.001$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Running the simulations, we obtained the following curves for 
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ and 
+\begin_inset Formula $E_{pot}$
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVT_results/NVT_kinetic.png
+	lyxscale 10
+	width 50text%
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVT_results/NVT_potential.png
+	lyxscale 10
+	width 50text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ and 
+\begin_inset Formula $E_{pot}$
+\end_inset
+
+ values for the NVT ensemble, with 
+\begin_inset Formula $N=100$
+\end_inset
+
+, 
+\begin_inset Formula $\beta=2$
+\end_inset
+
+, 
+\begin_inset Formula $\rho=0.0064$
+\end_inset
+
+, 
+\begin_inset Formula $L=25$
+\end_inset
+
+, 
+\begin_inset Formula $\nu=50$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can observe that 
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ oscillates around the value 
+\begin_inset Formula $75$
+\end_inset
+
+, which makes sense since that is the value we determined for the initial
+ 
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+, according to 
+\begin_inset Formula $E_{kin}=\frac{3Nk_{B}T}{2}$
+\end_inset
+
+.
+ Because 
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ only differs from the temperature 
+\begin_inset Formula $T$
+\end_inset
+
+ by a factor which is constant along the simulation, we can thus verify
+ with confidence that the thermostat is working, i.e.
+ is keeping the temperature roughly constant around the desired value.
+ With the thermostat on, energy is not conserved, which means there is not
+ direct observation we can make that relates our 
+\begin_inset Formula $E_{\text{kin}}$
+\end_inset
+
+ curve with our 
+\begin_inset Formula $E_{\text{pot}}$
+\end_inset
+
+ curve.
+ Because of this lack of evident correlation, we don't think there is anything
+ important to say about our total energy curve, represented below.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVT_results/NVT_total.png
+	lyxscale 10
+	width 60text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Total Energy values for the NVT ensemble, with 
+\begin_inset Formula $N=100$
+\end_inset
+
+, 
+\begin_inset Formula $\beta=2$
+\end_inset
+
+, 
+\begin_inset Formula $\rho=0.0064$
+\end_inset
+
+, 
+\begin_inset Formula $L=25$
+\end_inset
+
+, 
+\begin_inset Formula $\nu=50$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Diffusion
+\end_layout
+
+\begin_layout Subsubsection
+NVE
+\end_layout
+
+\begin_layout Standard
+Below we represent the velocity autocorrelation function we obtained for
+ the NVE ensemble simulation to which the plots in the NVE section refer
+ to.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVE_results/NVE_vacf.png
+	lyxscale 10
+	width 50text%
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVE_results/NVT_vacf_better.png
+	lyxscale 10
+	width 50text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Velocity autocorrelation function for NVE ensemble, with 
+\begin_inset Formula $N=100$
+\end_inset
+
+, 
+\begin_inset Formula $\beta=2$
+\end_inset
+
+, 
+\begin_inset Formula $\rho=0.0064$
+\end_inset
+
+, 
+\begin_inset Formula $L=25$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+An important feature of the correlation function is that when two consecutive
+ system configurations are highly correlated, as we had in the Ising single
+ flip procedure, and as we have here, because the verlet procedure is completely
+ deterministic and two consecutive system configurations are very similar.
+ In those cases, as it is mentioned in the Ising notes, an autocorrelation
+ function goes approximately as 
+\begin_inset Formula $e^{-t/\tau}$
+\end_inset
+
+, and we think the first part of our plot, roughly until 
+\begin_inset Formula $t=60000$
+\end_inset
+
+, highly resembles that curve, as we can see in the left curve.
+ We find it a bit odd that that first part is compatible with what we expected,
+ by the previous argument, and then the autocorrelation shows negative values.
+ 
+\end_layout
+
+\begin_layout Standard
+Firstly, we can argue that as 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+ approaches the total simulation time 
+\begin_inset Formula $T$
+\end_inset
+
+, the sum used to determine the correlation function starts having less
+ and less terms (e.g.
+ for 
+\begin_inset Formula $\Delta t=T$
+\end_inset
+
+, only value per particle is used), and thus the values around that final
+ range start having less and less statistical significance.
+ However, we also think it could be related to the average time a particle
+ needs for it to have enough close encounters with other particles such
+ that it reverts the direction of it's velocity vector, which would produce
+ negative terms in the correlation calculation.
+ 
+\end_layout
+
+\begin_layout Standard
+As far as the diffusion constant goes, the full run gives us 
+\begin_inset Formula $D\approx2.773$
+\end_inset
+
+, and the 
+\begin_inset Quotes bld
+\end_inset
+
+statistically relevant
+\begin_inset Quotes brd
+\end_inset
+
+ part gives us 
+\begin_inset Formula $D\approx7.279$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+NVT
+\end_layout
+
+\begin_layout Standard
+Below we represent the velocity autocorrelation function we obtained for
+ the NVT ensemble simulation to which the plots in the NVT section refer
+ to.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVT_results/NVT_vacf.png
+	lyxscale 10
+	width 60text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Velocity autocorrelation function for the NVT ensemble, with 
+\begin_inset Formula $N=100$
+\end_inset
+
+, 
+\begin_inset Formula $\beta=2$
+\end_inset
+
+, 
+\begin_inset Formula $\rho=0.0064$
+\end_inset
+
+, 
+\begin_inset Formula $L=25$
+\end_inset
+
+, 
+\begin_inset Formula $\nu=50$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When the Andersen thermostat is switched on, when a certain particle is
+ chosen to undergo a collision with the heat bath, it's velocity becomes
+ completely uncorrelated with it's previous velocities, as its component
+ values are changed to randomly generated ones.
+ In our simulation, approximately 
+\begin_inset Formula $5$
+\end_inset
+
+ out of the 
+\begin_inset Formula $100$
+\end_inset
+
+ particles undergo this collision per time step, so in average 
+\begin_inset Formula $20$
+\end_inset
+
+ time steps are needed for every particle's velocity to have completely
+ lost correlation with it's previous velocities, which is very little in
+ the scale of the entire simulation.
+ In the plot, we can see that the autocorrelation drops from 
+\begin_inset Formula $1.5$
+\end_inset
+
+ to 
+\begin_inset Formula $0$
+\end_inset
+
+ almost abruptly, and from there it's stays pretty much constant, which
+ is completely compatible with the previous argument.
+ Another important thing we can observe is that the autocorrelation starts
+ to 
+\begin_inset Quotes bld
+\end_inset
+
+falsely
+\begin_inset Quotes brd
+\end_inset
+
+ enlarge as 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+ approaches 
+\begin_inset Formula $T$
+\end_inset
+
+, which just comes in handy to support the argument of lack of statistical
+ significance we gave before, for the NVE ensemble.
 \end_layout
 
 \end_body

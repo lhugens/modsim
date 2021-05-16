@@ -14,7 +14,6 @@ using namespace std;
 
 struct dynamics{
     int npart;                            // number of particles
-    int npart_store;                      // number of particles
     int T;                                // length of the run
     int step = 0;                         // current time step of the simulation
     double box_l;                         // (cubic) box side length
@@ -38,8 +37,8 @@ struct dynamics{
     normal_distribution<double> gaussian; // gaussian distribution
     ofstream file;
 
-    dynamics(int total_steps, int NPART, int NPART_STORE, double DT, double BOX_L, double NU) :
-        T(total_steps), npart(NPART), npart_store(NPART_STORE), dt(DT), box_l(BOX_L), nu(NU)
+    dynamics(int total_steps, int NPART, double DT, double BOX_L, double NU) :
+        T(total_steps), npart(NPART), dt(DT), box_l(BOX_L), nu(NU)
     {
         dsfmt_seed(time(NULL));
 
@@ -48,7 +47,19 @@ struct dynamics{
         f.resize(npart, vector<double>(ndim));
         vs.resize(T, vector<vector<double>>(npart, vector<double>(ndim)));
 
-        file.open("state_variables.txt");
+        // file with system conditions, not to lose track of things
+        ofstream para;
+        para.open("results/parameters.txt");
+        para << left << setw(30) << "Total steps"     << T     << endl;
+        para << left << setw(30) << "N"               << npart << endl;
+        para << left << setw(30) << "dt"              << dt    << endl;
+        para << left << setw(30) << "box_l"           << box_l << endl;
+        para << left << setw(30) << "nu"              << nu    << endl;
+        para << left << setw(30) << "beta"            << beyta << endl;
+        para << left << setw(30) << "rho"             << npart / pow(box_l, 3) << endl;
+        para.close();
+
+        file.open("results/state_variables.txt");
 
         force_coefficient = pow(dt, 2) / (2*m);
 
@@ -75,7 +86,7 @@ struct dynamics{
 
     void test_boltzmann_distribution(){
         ofstream file;
-        file.open("boltzmann.txt");
+        file.open("results/boltzmann.txt");
         file << 1 / sqrt(m*beyta) << endl;
 
         for(int i=0; i<1000000; i++){
@@ -241,8 +252,10 @@ struct dynamics{
             if(rand() < andersen_probability){
                 average_collisions_bath++;
                 for(int l=0; l<ndim; l++){
+                    kinetic_energy -= m * pow((v[i][l]), 2) / 2;
                     v[i][l] = boltzmann_velocity();
                     vs[step][i][l] = v[i][l];
+                    kinetic_energy += m * pow((v[i][l]), 2) / 2;
                 }
             }
         }
@@ -277,7 +290,7 @@ struct dynamics{
 void get_vacf(vector<vector<vector<double>>> &vs){
     cout << "calculating velocity autocorrelation function (vacf)..." << endl;
     ofstream file;
-    file.open("vacf.txt");
+    file.open("results/vacf.txt");
 
     double vacf;
     int T = vs.size();
@@ -302,10 +315,11 @@ void get_vacf(vector<vector<vector<double>>> &vs){
 }
 
 int main(){
-    //dynamics md(100000, 100, 50, 0.001, 50, 50);
+    //dynamics(int total_steps, int NPART, double DT, double BOX_L, double NU) :
+    //dynamics md(100000, 100, 0.001, 25, 50);
     //md.run_NVE();
 
-    dynamics md(10000, 100, 50, 0.001, 30, 25);
+    dynamics md(100000, 100, 0.001, 25, 500);
     md.run_NVT();
 
     get_vacf(md.vs);

@@ -917,6 +917,10 @@ Total Energy values for the NVT ensemble, with
 Diffusion
 \end_layout
 
+\begin_layout Subsubsection
+NVE
+\end_layout
+
 \begin_layout Standard
 Below we represent the velocity autocorrelation function we obtained for
  the NVE ensemble simulation to which the plots in the NVE section refer
@@ -935,7 +939,15 @@ status open
 \begin_inset Graphics
 	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVE_results/NVE_vacf.png
 	lyxscale 10
-	width 60text%
+	width 50text%
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVE_results/NVT_vacf_better.png
+	lyxscale 10
+	width 50text%
 
 \end_inset
 
@@ -989,14 +1001,143 @@ An important feature of the correlation function is that when two consecutive
 \begin_inset Formula $t=60000$
 \end_inset
 
-, highly resembles that curve.
+, highly resembles that curve, as we can see in the left curve.
  We find it a bit odd that that first part is compatible with what we expected,
  by the previous argument, and then the autocorrelation shows negative values.
  
 \end_layout
 
 \begin_layout Standard
-Firstly, we can argue that
+Firstly, we can argue that as 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+ approaches the total simulation time 
+\begin_inset Formula $T$
+\end_inset
+
+, the sum used to determine the correlation function starts having less
+ and less terms (e.g.
+ for 
+\begin_inset Formula $\Delta t=T$
+\end_inset
+
+, only value per particle is used), and thus the values around that final
+ range start having less and less statistical significance.
+ However, we also think it could be related to the average time a particle
+ needs for it to have enough close encounters with other particles such
+ that it reverts the direction of it's velocity vector, which would produce
+ negative terms in the correlation calculation.
+ 
+\end_layout
+
+\begin_layout Standard
+As far as the diffusion constant goes, the full run gives us 
+\begin_inset Formula $D\approx2.773$
+\end_inset
+
+, and the 
+\begin_inset Quotes bld
+\end_inset
+
+statistically relevant
+\begin_inset Quotes brd
+\end_inset
+
+ part gives us 
+\begin_inset Formula $D\approx7.279$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+NVT
+\end_layout
+
+\begin_layout Standard
+Below we represent the velocity autocorrelation function we obtained for
+ the NVT ensemble simulation to which the plots in the NVT section refer
+ to.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/molecular_dynamics/NVT_results/NVT_vacf.png
+	lyxscale 10
+	width 60text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Velocity autocorrelation function for the NVT ensemble, with 
+\begin_inset Formula $N=100$
+\end_inset
+
+, 
+\begin_inset Formula $\beta=2$
+\end_inset
+
+, 
+\begin_inset Formula $\rho=0.0064$
+\end_inset
+
+, 
+\begin_inset Formula $L=25$
+\end_inset
+
+, 
+\begin_inset Formula $\nu=50$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When the Andersen thermostat is switched on, when a certain particle is
+ chosen to undergo a collision with the heat bath, it's velocity becomes
+ completely uncorrelated with it's previous velocities, as its component
+ values are changed to randomly generated ones.
+ In our simulation, approximately 
+\begin_inset Formula $5$
+\end_inset
+
+ out of the 
+\begin_inset Formula $100$
+\end_inset
+
+ particles undergo this collision per time step, so in average 
+\begin_inset Formula $20$
+\end_inset
+
+ time steps are needed for every particle's velocity to have completely
+ lost correlation with it's previous velocities, which is very little in
+ the scale of the entire simulation.
+ Thus, the 
 \end_layout
 
 \end_body
