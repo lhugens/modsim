@@ -6,6 +6,7 @@
 #include <random>
 
 #include "mt19937.h"
+#include "tools.hpp"
 
 using namespace std;
 
@@ -117,22 +118,6 @@ struct dynamics{
                      << setw(20) << kinetic_energy + potential_energy
                      << setw(20) << (double)average_collisions_bath / (double)step
                      << endl;
-    }
-
-    void print(vector<vector<double>> &v){
-        for(int i=0; i<v.size(); i++){
-            cout << left;
-            for(int j=0; j<v[0].size(); j++){
-                cout << setw(20) << v[i][j];
-            }
-            cout << endl;
-        }
-    }
-
-    void print(vector<double> &v){
-        for(int i=0; i<v.size(); i++){
-            cout << v[i] << endl;
-        }
     }
 
     double square_norm(vector<double> &v){
