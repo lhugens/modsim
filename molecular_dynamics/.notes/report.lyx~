@@ -307,5 +307,22 @@ which is a gaussian distribution with mean
 .
 \end_layout
 
+\begin_layout Subsection
+Autocorrelation and Diffusion
+\end_layout
+
+\begin_layout Standard
+For the velocity-velocity autocorrelation function, we used the following
+ expression
+\begin_inset Formula 
+\[
+\langle\vec{v}(t)\cdot\vec{v}(t')\rangle=\frac{1}{M}\sum_{v=1}^{M}\frac{1}{N}\sum_{i=1}^{N}\vec{v}_{l}\left(t_{v}\right)\cdot\vec{v}_{l}\left(t'\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
 \end_body
 \end_document

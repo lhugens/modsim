@@ -33,7 +33,7 @@ struct dynamics{
     vector<vector<double>> r;             // particle current positions
     vector<vector<double>> v;             // particle current velocity
     vector<vector<double>> f;             // total force acting on each particle
-    vector<vector<double>> vs;            // history of particle velocities
+    vector<vector<vector<double>>> vs;    // history of particle velocities
     default_random_engine gen;            // random_seed 
     normal_distribution<double> gaussian; // gaussian distribution
     ofstream file;
@@ -46,7 +46,7 @@ struct dynamics{
         r.resize(npart, vector<double>(ndim));
         v.resize(npart, vector<double>(ndim));
         f.resize(npart, vector<double>(ndim));
-        vs.resize(T, vector<double>(ndim));
+        vs.resize(T, vector<vector<double>>(npart, vector<double>(ndim)));
 
         file.open("state_variables.txt");
 
@@ -111,7 +111,6 @@ struct dynamics{
     }
 
     void write_state_variables_to_file(){
-        update_kinetic_energy();
         file << left << setw(20) << step  
                      << setw(20) << kinetic_energy 
                      << setw(20) << potential_energy
@@ -201,12 +200,8 @@ struct dynamics{
         for(int i=0; i<npart; i++){
             for(int j=0; j<ndim; j++){
                 v[i][j] *= scaling_factor;
+                vs[step][i][j] = v[i][j];
             }
-        }
-        
-        // store first velocity
-        for(int j=0; j<ndim; j++){
-            vs[step][j] = v[0][j];
         }
     }
   
@@ -221,6 +216,7 @@ struct dynamics{
 
     void verlet_step_NVE(){
         step += 1;
+        kinetic_energy = 0;
 
         for(int k=0; k<npart; k++){
             for(int l=0; l<ndim; l++){
@@ -234,10 +230,9 @@ struct dynamics{
         for(int k=0; k<npart; k++){
             for(int l=0; l<ndim; l++){
                 v[k][l] += f[k][l] * dt / (2*m);
+                kinetic_energy += m * pow((v[k][l]), 2) / 2;
+                vs[step][k][l] = v[k][l];
             }
-        }
-        for(int j=0; j<ndim; j++){
-            vs[step][j] = v[0][j];
         }
     }
 
@@ -247,6 +242,7 @@ struct dynamics{
                 average_collisions_bath++;
                 for(int l=0; l<ndim; l++){
                     v[i][l] = boltzmann_velocity();
+                    vs[step][i][l] = v[i][l];
                 }
             }
         }
@@ -254,12 +250,12 @@ struct dynamics{
 
     void run_NVE(){
         initialize_positions_velocities();
-        //write_positions_to_file();
+        write_positions_to_file();
         cout << "performing run..." << endl;
         for(int i=1; i<T; i++){
             verlet_step_NVE();
             //write_positions_to_file();
-            //write_state_variables_to_file();
+            write_state_variables_to_file();
             cout << "\r [" << setw(3) << round((double)i * 100 /T)  << "%] " << flush;
         }
         cout << endl;
@@ -278,22 +274,25 @@ struct dynamics{
     }
 };
 
-void get_vacf(vector<vector<double>> &vs){
+void get_vacf(vector<vector<vector<double>>> &vs){
     cout << "calculating velocity autocorrelation function (vacf)..." << endl;
     ofstream file;
     file.open("vacf.txt");
 
     double vacf;
     int T = vs.size();
+    int N = vs[0][0].size();
 
     for(int delta_t=1; delta_t < T; delta_t++){
         vacf = 0.0;
         for(int t=0; t<T-delta_t; t++){
-            for(int j=0; j<ndim; j++){
-                vacf += vs[t][j]*vs[t+delta_t][j];
+            for(int i=0; i<N; i++){
+                for(int j=0; j<ndim; j++){
+                    vacf += vs[t][i][j]*vs[t+delta_t][i][j];
+                }
             }
         }
-        vacf /= (double)(T-delta_t);
+        vacf /= (double)(T-delta_t) * N;
         file << left << setw(20) << delta_t
                      << setw(20) << vacf
                      << endl;
@@ -303,11 +302,12 @@ void get_vacf(vector<vector<double>> &vs){
 }
 
 int main(){
-    dynamics md(1000, 100, 2, 0.001, 50, 1);
-    md.run_NVE();
-    get_vacf(md.vs);
+    //dynamics md(100000, 100, 50, 0.001, 50, 50);
+    //md.run_NVE();
 
-    //dynamics md(100000, 100, 0.001, 50, 50);
-    //md.run_NVT();
+    dynamics md(10000, 100, 50, 0.001, 30, 25);
+    md.run_NVT();
+
+    get_vacf(md.vs);
 
 }
