@@ -20,17 +20,29 @@ int main(){
 
     p2.pos = {2, 1, 1};
     p2.dir = {0, 0, 1};
-    */
 
     // this should be 1
-    //cout << s.dist_rods(p1, p2) << endl;
+    cout << s.dist_rods(p1, p2) << endl;
+
+    */
 
     p1.pos = {1, 1, 2};
-    p1.dir = {1, 0, 0};
+    p1.dir = {0, 1, 0};
 
     p2.pos = {1, 1, 1};
     p2.dir = {0, 0, 1};
 
     // this should be 0.5
     cout << s.dist_rods(p1, p2) << endl;
+
+    /*
+    p1.pos = {1, 1, 1};
+    p1.dir = {1, 0, 0};
+
+    p2.pos = {3, 1, 1};
+    p2.dir = {1, 0, 0};
+
+    // this should be 0.5
+    cout << s.dist_rods(p1, p2) << endl;
+    */
 }

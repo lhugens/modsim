@@ -63,7 +63,7 @@ struct simulation{
             else{
                 xmu = sign(lh,xmu);
                 xla = xmu*w1w2 + rw1;
-                if (fabs(xla > lh)) 
+                if (fabs(xla) > lh) 
                     xla = sign(lh, xla);
             }
         }
