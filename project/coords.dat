@@ -1,0 +1,6 @@
+2
+0         10        
+0         10        
+0         10        
+SPHEROCYLINDER(1)  1         1         2         0         -2        -0        2         0         -0        0         0         2         
+SPHEROCYLINDER(1)  1         1         1         0         -0        -2        0         2         -0        2         0         0         
