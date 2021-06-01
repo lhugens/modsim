@@ -1,0 +1,3 @@
+01/06
+
+- in the paper they use NPT MC simulations. What is the most practical way to ensure that the pressure and temperature stay constant, given that they don't enter directly in the hard particle MC simulation?

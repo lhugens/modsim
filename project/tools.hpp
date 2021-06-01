@@ -5,6 +5,10 @@ struct particle{
 };
 
 
+inline double rdouble(){
+    return dsfmt_genrand();
+}
+
 double v_sprod(vector<double> &v1, vector<double> &v2){
     double sum = 0;
     for(int i=0; i<v1.size(); i++){
@@ -21,6 +25,13 @@ double v_norm2(vector<double> &v){
     return sum;
 }
 
+void normalize(vector<double> &v){
+    double normm = sqrt(v_norm2(v));
+    for(int i=0; i<v.size(); i++){
+        v[i] /= normm;
+    }
+}
+
 void print(vector<double> &v){
     for(auto x : v){
         cout << x << endl;
@@ -32,7 +43,7 @@ static inline double sign(double a, double b){
     return (b < 0) ? -a : a;
 }
 
-double dist_rods(particle &p1, particle &p2, double &box_l, double &L){
+double dist_rods(particle &p1, particle &p2, vector<double> &box_l, double &L){
     vector<double> r12(ndim);
 
     for(int i=0; i<ndim; i++){
@@ -44,7 +55,7 @@ double dist_rods(particle &p1, particle &p2, double &box_l, double &L){
 
     for(int i=0; i<ndim; i++){
         fx = fabs(r12[i]);
-        min_r12[i] = ( (fx < box_l - fx)? r12[i] : (r12[i] - ((r12[i] > 0)? box_l : -box_l)));
+        min_r12[i] = ( (fx < box_l[i] - fx)? r12[i] : (r12[i] - ((r12[i] > 0)? box_l[i] : -box_l[i])));
     }
 
     double rr   = v_norm2(min_r12);
@@ -100,36 +111,39 @@ vector<vector<double>> rotation_matrix(vector<double> &n){
     return rot_matrix;
 }
 
-void init_particle_file(ofstream &file, int N, double box_l){
+void init_particle_file(ofstream &file, int N, vector<double> &box_l){
+}
+
+void write_config_to_file(int step, int &N, vector<double> &box_l, vector<particle> &part, double &L, double &D){
+    char filename[128];
+    sprintf(filename, "coords/coords_step%07d.dat", step);
+
+    ofstream file;
+    file.open(filename);
+
     file << N << endl;
 
     for(int i=0; i<ndim; i++){
-        file << left << setw(10) << 0.0 << setw(10) << box_l << endl;
-    }
-}
-
-void write_particle_to_file(ofstream &file, particle &p, double &L, double &D){
-    vector<vector<double>> rot_matrix = rotation_matrix(p.dir);
-
-    // particle type
-    file << "SPHEROCYLINDER(" << L << ")  " << left;
-
-    for(auto x : p.pos){
-        file << setw(10) << x;
+        file << left << setw(10) << 0.0 << setw(10) << box_l[i] << endl;
     }
 
-    for(auto x : rot_matrix){
-        for(auto y : x){
-            file << setw(10) << D*y;
+    for(int i=0; i<part.size(); i++){
+        vector<vector<double>> rot_matrix = rotation_matrix(part[i].dir);
+
+        // particle type
+        file << "SPHEROCYLINDER(" << L << ")  " << left;
+
+        for(auto x : part[i].pos){
+            file << setw(20) << x;
         }
+
+        for(auto x : rot_matrix){
+            for(auto y : x){
+                file << setw(20) << D*y;
+            }
+        }
+
+        file << endl;
     }
-
-    file << endl;
+    file.close();
 }
-
-
-
-
-
-
-

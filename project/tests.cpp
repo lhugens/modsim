@@ -8,9 +8,11 @@
 
 using namespace std;
 
+#include "mt19937.h"
 #include "tools.hpp"
 #include "simulation.hpp"
 
+/* outdated
 void distance_test(){
     // test to see if minimum distance is working
 
@@ -46,7 +48,9 @@ void distance_test(){
     // this should be 0.5
     cout << dist_rods(p1, p2, box_l, L) << endl;
 }
+*/
 
+/* outdated
 void write_to_file_test(){
     particle p1;
     particle p2;
@@ -70,7 +74,38 @@ void write_to_file_test(){
 
     file.close();
 }
+*/
+
+void first_simulation_test(){
+    simulation s(10);
+
+    // rdoubleom initial configuration
+    
+    s.box_l = {10, 10, 10};
+
+    for(int i=0; i<s.N; i++){
+        for(int j=0; j<ndim; j++){
+            s.part[i].pos[j] = rdouble() * s.box_l[j];
+            s.part_proposed[i].pos[j] = s.part[i].pos[j];
+            s.part[i].dir[j] = 2 * rdouble() - 1;
+            cout << s.part[i].pos[j] << endl;
+        }
+        normalize(s.part[i].dir);
+    }
+
+    for(int step=0; step<100; step++){
+        s.write_config(step);
+        s.propose();
+        s.metropolis_acceptance();
+    }
+
+
+}
 
 int main(){
-    write_to_file_test();
+    dsfmt_seed(time(NULL));
+
+    first_simulation_test();
+
+
 }
