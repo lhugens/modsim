@@ -8,7 +8,12 @@
 
 using namespace std;
 
+#include "mt19937.h"
 #include "tools.hpp"
 #include "simulation.hpp"
 
-int main(){}
+int main(){
+
+    simulation s(10);
+    s.fcc_config();
+}
