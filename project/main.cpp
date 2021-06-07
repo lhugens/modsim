@@ -13,7 +13,17 @@ using namespace std;
 #include "simulation.hpp"
 
 int main(){
+    dsfmt_seed(time(NULL));
 
-    simulation s(10);
-    s.fcc_config();
+    simulation s;
+    s.fcc_config(4);
+    s.set_density(0.1);
+    s.write_config(0);
+
+
+    for(int step=1; step<10; step++){
+        s.propose();
+        s.metropolis_acceptance();
+        s.write_config(step);
+    }
 }

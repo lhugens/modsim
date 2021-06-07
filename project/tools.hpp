@@ -32,6 +32,24 @@ void normalize(vector<double> &v){
     }
 }
 
+void print(particle &p){
+    cout << left;
+    for(int i=0; i<ndim; i++){
+        cout << setw(10) << p.pos[i];
+    }
+    for(int i=0; i<ndim; i++){
+        cout << setw(10) << p.dir[i];
+    }
+    cout << endl;
+}
+
+
+void print(vector<particle> part){
+    for(auto p : part){
+        print(p);
+    }
+}
+
 void print(vector<double> &v){
     for(auto x : v){
         cout << x << endl;
@@ -147,3 +165,63 @@ void write_config_to_file(int step, int &N, vector<double> &box_l, vector<partic
     }
     file.close();
 }
+
+tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, double &L){
+
+    vector<particle> part;
+    vector<double> box_l(ndim);
+    particle p_temp;
+
+    p_temp.dir[2] = 1.0;
+    box_l[0] = 2*L*N_side + 2*L;
+    box_l[1] = 2*L*N_side + 2*L;
+    box_l[2] = 2*L*N_side + 2*L;
+
+    //generate cubic for 
+    for(int i = 0; i < N_side + 1; i++){
+        for(int j = 0; j < N_side + 1; j++){
+            for(int l = 0; l < N_side + 1; l++){
+                p_temp.pos[0] = (double)i*2*L;
+                p_temp.pos[1] = (double)j*2*L;
+                p_temp.pos[2] = (double)l*2*L;
+    	        part.push_back(p_temp);
+            }
+        }   
+    }
+    //generate fcc
+    for(int i = 0; i<N_side; i++){
+        for(int j=0; j<N_side; j++){
+            for(int l=0; l<N_side + 1; l++){
+            	p_temp.pos[0] = (double)(i+0.5)*2*L;
+    		p_temp.pos[1] = (double)(j+0.5)*2*L; 
+    		p_temp.pos[2] = (double)l*2*L;
+    		part.push_back(p_temp);
+            }
+        }
+    }
+
+    for(int i = 0; i<N_side; i++){
+        for(int j=0; j<N_side + 1; j++){
+            for(int l=0; l<N_side; l++){
+            	p_temp.pos[0] = (double)(i+0.5)*2*L; 
+    		p_temp.pos[1] = (double)j*2*L; 
+    		p_temp.pos[2] = (double)(l+0.5)*2*L;
+    		part.push_back(p_temp);
+            }
+        }
+    }
+
+    for(int i = 0; i<N_side + 1; i++){
+        for(int j=0; j<N_side; j++){
+            for(int l=0; l<N_side; l++){
+            	p_temp.pos[0] = (double)i*2*L;
+    		p_temp.pos[1] = (double)(j+ 0.5)*2*L; 
+    		p_temp.pos[2] = (double)(l+0.5)*2*L;
+    		part.push_back(p_temp);
+            }
+        }
+    }
+    return {part, box_l, part.size()};
+}
+
+
