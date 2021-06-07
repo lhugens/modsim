@@ -3,8 +3,9 @@ struct simulation{
     double L  = 1;                      // length of the spherocylinders
     double D  = 0.5;                    // Diameter of the cylinders
     double D2 = pow(D, 2);              // Diameter**2
-    double dl = 0.02;                    // maximum proposed displacement for each component
-    double dn = 0.02;                    // maximum proposed change in direction for each component
+    double dl = 0.02;                   // maximum proposed displacement for each component
+    double dn = 0.02;                   // maximum proposed change in direction for each component
+    double dd = 0.01;                   // maximum proposed change in density
     double density;                     // density of the system (volume occupied by particles / total volume)
     vector<double> box_l;               // coordinates of box corners, one is at the origin
     vector<particle> part;              // main particle matrix
@@ -47,6 +48,7 @@ struct simulation{
             }
             normalize(part_proposed[i].dir);
         }
+        set_density(density + rdouble() * dd);
     }
 
     void accept_proposal(){
