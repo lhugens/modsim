@@ -1,11 +1,11 @@
 struct simulation{
     int N;                              // number of particles
     double L  = 1;                      // length of the spherocylinders
-    double D  = 0.5;                    // Diameter of the cylinders
+    double D  = 1;                      // Diameter of the cylinders
     double D2 = pow(D, 2);              // Diameter**2
-    double dl = 0.0;                   // maximum proposed displacement for each component
-    double dn = 0.0;                   // maximum proposed change in direction for each component
-    double dd = 0.0;                   // maximum proposed change in density
+    double dl = 0.01;                    // maximum proposed displacement for each component
+    double dn = 0.05;                     // maximum proposed change in direction for each component
+    double dd = 0.001;                    // maximum proposed change in density
     double density;                     // density of the system (volume occupied by particles / total volume)
     vector<double> box_l;               // coordinates of box corners, one is at the origin
     vector<double> box_l_proposed;      // coordinates of box corners, one is at the origin
@@ -57,7 +57,6 @@ struct simulation{
     }
 
     void accept_proposal(){
-        cout << "accepted!" << endl;
         for(int i=0; i<N; i++){
             part[i] = part_proposed[i];
         }
@@ -67,7 +66,6 @@ struct simulation{
     }
 
     bool they_overlap(particle &p1, particle &p2){
-        //cout << dist_rods(p1, p2, box_l, L) << endl;
         return (dist_rods(p1, p2, box_l, L) < D2);
     }
 
@@ -75,7 +73,6 @@ struct simulation{
         for(int i=0; i<N-1; i++){
             for(int j=i+1; j<N; j++){
                 if(they_overlap(part_proposed[i], part_proposed[j])){
-                    cout << "overlap!" << endl;
                     return true;
                 }
             }

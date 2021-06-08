@@ -117,15 +117,15 @@ double dist_rods(particle &p1, particle &p2, vector<double> &box_l, double &L){
 }
 
 vector<vector<double>> rotation_matrix(vector<double> &n){
-    double cos_phi = sqrt(pow(n[0], 2) + pow(n[1], 2));
-    double sin_phi = n[2]; 
-    double cos_the = cos_phi ? n[0] / cos_phi : 1.0;
-    double sin_the = cos_phi ? n[1] / cos_phi : 0.0;
+    double sin_the = sqrt(pow(n[0], 2) + pow(n[1], 2));
+    double cos_the = n[2]; 
+    double cos_phi = sin_the ? n[0] / sin_the : 1.0;
+    double sin_phi = sin_the ? n[1] / sin_the : 0.0;
 
-    vector<vector<double>> rot_matrix {{n[0], -sin_the, -sin_phi*cos_the},
-                                                 {n[1],  cos_the, -sin_phi*sin_the},
-                                                 {n[2],        0,           cos_phi}};
-
+    vector<vector<double>> rot_matrix {{cos_phi*cos_the, -sin_phi, -n[0]},
+                                       {sin_phi*cos_the,  cos_phi, -n[1]},
+                                       {sin_the,                0,  n[2]}};
+ 
     return rot_matrix;
 }
 
@@ -147,6 +147,7 @@ void write_config_to_file(int step, int &N, vector<double> &box_l, vector<partic
 
     for(int i=0; i<part.size(); i++){
         vector<vector<double>> rot_matrix = rotation_matrix(part[i].dir);
+        //cout << rot_matrix.size() << " " << rot_matrix[0].size() << endl;
 
         // particle type
         file << "SPHEROCYLINDER(" << L << ")  " << left;
@@ -157,7 +158,7 @@ void write_config_to_file(int step, int &N, vector<double> &box_l, vector<partic
 
         for(auto x : rot_matrix){
             for(auto y : x){
-                file << setw(20) << D*y;
+                file << setw(20) << y;
             }
         }
 
