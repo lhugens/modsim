@@ -16,14 +16,17 @@ int main(){
     dsfmt_seed(time(NULL));
 
     simulation s;
-    s.fcc_config(4, 0.2);
-    cout << s.exists_overlap() << endl;
+    s.fcc_config(4, 0.3);
+    bool overlap = s.exists_overlap();
+    cout << overlap << endl;
+    assert(!overlap);
     s.write_config(0);
 
 
-    for(int step=1; step<25; step++){
+    for(int step=1; step<1000; step++){
         s.propose();
         s.metropolis_acceptance();
+        cout << s.density << endl;
         s.write_config(step);
     }
 }

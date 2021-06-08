@@ -3,9 +3,10 @@ struct simulation{
     double L  = 1;                      // length of the spherocylinders
     double D  = 1;                      // Diameter of the cylinders
     double D2 = pow(D, 2);              // Diameter**2
-    double dl = 0.01;                    // maximum proposed displacement for each component
-    double dn = 0.05;                     // maximum proposed change in direction for each component
-    double dd = 0.001;                    // maximum proposed change in density
+    double dl = 0.02;                   // maximum proposed displacement for each component
+    double dn = 0.05;                   // maximum proposed change in direction for each component
+    double dd = 0.001;                  // maximum proposed change in density
+    int C = 0;                          // counter for rejection
     double density;                     // density of the system (volume occupied by particles / total volume)
     vector<double> box_l;               // coordinates of box corners, one is at the origin
     vector<double> box_l_proposed;      // coordinates of box corners, one is at the origin
@@ -31,7 +32,7 @@ struct simulation{
 
         double v0 = M_PI * (L * pow(D, 2) / 4 + pow(D, 3) / 6);
         double current_volume = box_l[0] * box_l[1] * box_l[2];
-        double desired_volume = N * v0 / (2 * density/(sqrt(2) + (L/D)*sqrt(3)));
+        double desired_volume = N * v0 * (sqrt(2) + (L/D)*sqrt(3)) / (2 * density);
         double scale_factor   = cbrt(desired_volume / current_volume);
 
         for(int j=0; j<ndim; j++){
@@ -81,8 +82,22 @@ struct simulation{
     }
 
     void metropolis_acceptance(){
-        if(!exists_overlap())
+        if(!exists_overlap()){
             accept_proposal();
+            cout << "accepted"<< endl;
+            C = 0;
+        }
+        else{
+            cout << "overlap" << endl;
+            C +=1;
+            if(C > 50 || dd < 1){
+                dl /= 2;
+                dn /= 2;
+                dd += 0.01;
+                //cout << " " << dl << " " << dn << " " << dd << endl;
+                }
+                    
+        }
     }
 
 };
