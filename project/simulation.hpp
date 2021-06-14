@@ -7,7 +7,8 @@ struct simulation{
     double D2 = pow(D, 2);              // Diameter**2
     double dl = 0.02;                   // maximum proposed displacement for each component
     double dn = 0.05;                   // maximum proposed change in direction for each component
-    double dd = 0.001;                  // maximum proposed change in rho
+    double drho = 0.001;                // maximum proposed change in rho
+    double betaP = 1;
     double rho;                         // density of the system (volume occupied by particles / total volume)
     double v0;                          // volume of one particle
     double rho_cp;                      // close packed density 
@@ -54,8 +55,7 @@ struct simulation{
         }
     }
 
-    void propose_dl_dn(){
-        step++;
+    void propose_NVT(){
         for(int i=0; i<N; i++){
             for(int j=0; j<ndim; j++){
                 part_proposed[i].pos[j] = part[i].pos[j] + (2 * rdouble() - 1) * dl;
@@ -68,7 +68,14 @@ struct simulation{
         }
     }
 
+    void propose_NPT(){
+        propose_NVT();
+        set_rho(rho + drho * (2 * rdouble() - 1));
+    }
+
     void accept_proposal(){
+        accept++;
+        accept_rate = (double)accept/step;
         for(int i=0; i<N; i++){
             part[i] = part_proposed[i];
         }
@@ -78,10 +85,10 @@ struct simulation{
     }
 
     bool they_overlap(particle &p1, particle &p2){
-        print(p1);
-        print(p2);
-        cout << sqrt(dist_rods(p1, p2, box_l, L)) << endl;
-        cout << endl;
+        //print(p1);
+        //print(p2);
+        //cout << sqrt(dist_rods(p1, p2, box_l, L)) << endl;
+        //cout << endl;
         return (dist_rods(p1, p2, box_l, L) < D2);
     }
 
@@ -96,12 +103,20 @@ struct simulation{
         return false;
     }
 
-    void metropolis_acceptance(){
+    void metropolis_acceptance_NVT(){
         if(!exists_overlap()){
             accept_proposal();
-            accept++;
         }
-        accept_rate = (double)accept/step;
+    }
+
+    void metropolis_acceptance_NPT(){
+        if(!exists_overlap()){
+            double V      = pow(box_l[0], 3);
+            double V_prop = pow(box_l_proposed[0], 3);
+            if(rdouble() < exp(-betaP*(V_prop - V) + N * log(V_prop/V))){
+                accept_proposal();
+            }
+        }
     }
 
 };

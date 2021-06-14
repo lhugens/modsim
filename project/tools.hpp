@@ -175,9 +175,9 @@ tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, doub
     double side = 2*L;
 
     p_temp.dir[2] = 1.0;
-    box_l[0] = side*N_side;
-    box_l[1] = side*N_side;
-    box_l[2] = side*N_side;
+    box_l[0] = side*N_side + side;
+    box_l[1] = side*N_side + side;
+    box_l[2] = side*N_side + side;
 
     //generate cubic for 
     for(int i = 0; i < N_side + 1; i++){
