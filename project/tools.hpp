@@ -172,19 +172,20 @@ tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, doub
     vector<particle> part;
     vector<double> box_l(ndim);
     particle p_temp;
+    double side = 2*L;
 
     p_temp.dir[2] = 1.0;
-    box_l[0] = 2*L*N_side + 2*L;
-    box_l[1] = 2*L*N_side + 2*L;
-    box_l[2] = 2*L*N_side + 2*L;
+    box_l[0] = side*N_side;
+    box_l[1] = side*N_side;
+    box_l[2] = side*N_side;
 
     //generate cubic for 
     for(int i = 0; i < N_side + 1; i++){
         for(int j = 0; j < N_side + 1; j++){
             for(int l = 0; l < N_side + 1; l++){
-                p_temp.pos[0] = (double)i*2*L;
-                p_temp.pos[1] = (double)j*2*L;
-                p_temp.pos[2] = (double)l*2*L;
+                p_temp.pos[0] = (double)i*side;
+                p_temp.pos[1] = (double)j*side;
+                p_temp.pos[2] = (double)l*side;
     	        part.push_back(p_temp);
             }
         }   
@@ -193,9 +194,9 @@ tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, doub
     for(int i = 0; i<N_side; i++){
         for(int j=0; j<N_side; j++){
             for(int l=0; l<N_side + 1; l++){
-            	p_temp.pos[0] = (double)(i+0.5)*2*L;
-    		p_temp.pos[1] = (double)(j+0.5)*2*L; 
-    		p_temp.pos[2] = (double)l*2*L;
+            	p_temp.pos[0] = (double)(i+0.5)*side;
+    		p_temp.pos[1] = (double)(j+0.5)*side; 
+    		p_temp.pos[2] = (double)l*side;
     		part.push_back(p_temp);
             }
         }
@@ -204,9 +205,9 @@ tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, doub
     for(int i = 0; i<N_side; i++){
         for(int j=0; j<N_side + 1; j++){
             for(int l=0; l<N_side; l++){
-            	p_temp.pos[0] = (double)(i+0.5)*2*L; 
-    		p_temp.pos[1] = (double)j*2*L; 
-    		p_temp.pos[2] = (double)(l+0.5)*2*L;
+            	p_temp.pos[0] = (double)(i+0.5)*side; 
+    		p_temp.pos[1] = (double)j*side; 
+    		p_temp.pos[2] = (double)(l+0.5)*side;
     		part.push_back(p_temp);
             }
         }
@@ -215,9 +216,9 @@ tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, doub
     for(int i = 0; i<N_side + 1; i++){
         for(int j=0; j<N_side; j++){
             for(int l=0; l<N_side; l++){
-            	p_temp.pos[0] = (double)i*2*L;
-    		p_temp.pos[1] = (double)(j+ 0.5)*2*L; 
-    		p_temp.pos[2] = (double)(l+0.5)*2*L;
+            	p_temp.pos[0] = (double)i*side;
+    		p_temp.pos[1] = (double)(j+ 0.5)*side; 
+    		p_temp.pos[2] = (double)(l+0.5)*side;
     		part.push_back(p_temp);
             }
         }
