@@ -23,7 +23,7 @@ void NVT(double rho, double L){
     s.write_config(1);
 
     // make sure there's no overlap at the start
-    assert(!(s.exists_overlap()));
+    assert(!(s.exists_initial_overlap()));
 
     // main monte carlo loop
     int total_steps = 1000; 
@@ -49,7 +49,7 @@ void NPT(double betaP, double L){
     s.write_config(1);
 
     // make sure there's no overlap at the start
-    assert(!(s.exists_overlap()));
+    assert(!(s.exists_initial_overlap()));
 
     // main monte carlo loop
     int total_steps = 1000; 
@@ -66,5 +66,4 @@ void NPT(double betaP, double L){
 int main(){
     dsfmt_seed(time(NULL));
     NVT(0.5, 3.5);
-
 }

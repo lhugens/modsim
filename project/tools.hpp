@@ -9,6 +9,7 @@ inline double rdouble(){
     return dsfmt_genrand();
 }
 
+
 double v_sprod(vector<double> &v1, vector<double> &v2){
     double sum = 0;
     for(int i=0; i<v1.size(); i++){
@@ -167,7 +168,7 @@ void write_config_to_file(int step, int &N, vector<double> &box_l, vector<partic
     file.close();
 }
 
-tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, double &L){
+tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, double L, double rho){
 
     vector<particle> part;
     vector<double> box_l(ndim);
@@ -223,7 +224,22 @@ tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, doub
             }
         }
     }
-    return {part, box_l, part.size()};
-}
 
+    double D = 1;
+    int N = part.size();
+    double v0 = M_PI * (L * pow(D, 2) / 4 + pow(D, 3) / 6);
+    double rho_cp = 2 / (sqrt(2) + (L/D)*sqrt(3));
+    double current_volume = box_l[0] * box_l[1] * box_l[2];
+    double desired_volume = N * v0 / (rho * rho_cp);
+    double scale_factor   = sqrt(desired_volume / current_volume);
+
+    for(int j=0; j<ndim-1; j++){
+        for(int i=0; i<N; i++){
+            part[i].pos[j] *= scale_factor;
+        }
+        box_l[j] *= scale_factor;
+    }
+
+    return {part, box_l, N};
+}
 

@@ -2,6 +2,7 @@ struct simulation{
     int N;                              // number of particles
     int step = 0;                       // current step of simulation
     int accept = 0;                     // number of accepted proposals
+    int pmoved;
     double L;                           // length of the spherocylinders
     double D  = 1;                      // Diameter of the cylinders
     double D2 = pow(D, 2);              // Diameter**2
@@ -26,18 +27,19 @@ struct simulation{
 
     inline void write_config(int step_no){write_config_to_file(step_no, N, box_l, part, L, D);}
 
+    // random integers from in the interval [0, N-1] 
+    inline double rint(){return (int)(dsfmt_genrand() * N);}
+
+
     void fcc_config(int N_side, double rho_initial){
-        auto [part_c, box_l_c, N_c] = fcc_config_initial(N_side, L);
+        auto [part_c, box_l_c, N_c] = fcc_config_initial(N_side, L, rho_initial);
         part  = part_c;
         box_l = box_l_c;
         N     = N_c;
         part_proposed = part;
         box_l_proposed = box_l;
         write_config(0);
-        set_rho(rho_initial);
-        part = part_proposed;
-        box_l = box_l_proposed;
-        //cout << "rho " << N * v0 / (box_l[0] * box_l[1] * box_l[2] * rho_cp) << endl;
+        cout << "rho " << N * v0 / (box_l[0] * box_l[1] * box_l[2] * rho_cp) << endl;
     }
 
     void set_rho(double r){
@@ -56,15 +58,18 @@ struct simulation{
     }
 
     void propose_NVT(){
-        for(int i=0; i<N; i++){
+        pmoved = rint();
+        if(rand() < 0.5){
             for(int j=0; j<ndim; j++){
-                part_proposed[i].pos[j] = part[i].pos[j] + (2 * rdouble() - 1) * dl;
-                part_proposed[i].dir[j] = part[i].dir[j] + (2 * rdouble() - 1) * dn;
-
-                // boundary conditions
-                part_proposed[i].pos[j] -= box_l[j] * floor(part_proposed[i].pos[j]/box_l[j]);
+                part_proposed[pmoved].pos[j] = part[pmoved].pos[j] + (2 * rdouble() - 1) * dl;
+                part_proposed[pmoved].pos[j] -= box_l[j] * floor(part_proposed[pmoved].pos[j]/box_l[j]);
             }
-            normalize(part_proposed[i].dir);
+        }
+        else{
+            for(int j=0; j<ndim; j++){
+                part_proposed[pmoved].dir[j] = part[pmoved].dir[j] + (2 * rdouble() - 1) * dn;
+            }
+            normalize(part_proposed[pmoved].dir);
         }
     }
 
@@ -92,12 +97,21 @@ struct simulation{
         return (dist_rods(p1, p2, box_l, L) < D2);
     }
 
-    bool exists_overlap(){
-        for(int i=0; i<N-1; i++){
-            for(int j=i+1; j<N; j++){
-                if(they_overlap(part_proposed[i], part_proposed[j])){
+    bool exists_initial_overlap(){
+        for(int i=0; i<N; i++){
+            for(int j=1; j<N-1; j++){
+                if(they_overlap(part_proposed[i], part_proposed[j]))
                     return true;
-                }
+            }
+        }
+        return false;
+    }
+
+    bool exists_overlap(){
+        for(int i=0; i<N; i++){
+            if(pmoved != i){
+                if(they_overlap(part_proposed[pmoved], part_proposed[i]))
+                    return true;
             }
         }
         return false;
