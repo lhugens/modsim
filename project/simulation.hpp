@@ -6,7 +6,7 @@ struct simulation{
     double L;                           // length of the spherocylinders
     double D  = 1;                      // Diameter of the cylinders
     double D2 = pow(D, 2);              // Diameter**2
-    double dl = 0.02;                   // maximum proposed displacement for each component
+    double dl = 0.1;                   // maximum proposed displacement for each component
     double dn = 0.05;                   // maximum proposed change in direction for each component
     double drho = 0.001;                // maximum proposed change in rho
     double betaP = 1;
@@ -14,18 +14,20 @@ struct simulation{
     double v0;                          // volume of one particle
     double rho_cp;                      // close packed density 
     double accept_rate;                 // acceptance rate
+    particle p_temp;                    // temporary particle holder
     vector<double> box_l;               // coordinates of box corners, one is at the origin
     vector<double> box_l_proposed;      // coordinates of box corners, one is at the origin
     vector<particle> part;              // main particle matrix
     vector<particle> part_proposed;     // main particle matrix
+    string folder;                      // folder name to ouput coords
 
-    simulation(double l) : L(l) 
+    simulation(string f, double l) : folder(f), L(l) 
     {
         v0 = M_PI * (L * pow(D, 2) / 4 + pow(D, 3) / 6);
         rho_cp = 2 / (sqrt(2) + (L/D)*sqrt(3));
     };
 
-    inline void write_config(int step_no){write_config_to_file(step_no, N, box_l, part, L, D);}
+    inline void write_config(int step_no){write_config_to_file(step_no, N, box_l, part, L, D, folder);}
 
     // random integers from in the interval [0, N-1] 
     inline double rint(){return (int)(dsfmt_genrand() * N);}
@@ -38,8 +40,7 @@ struct simulation{
         N     = N_c;
         part_proposed = part;
         box_l_proposed = box_l;
-        write_config(0);
-        cout << "rho " << N * v0 / (box_l[0] * box_l[1] * box_l[2] * rho_cp) << endl;
+        //cout << "rho " << N * v0 / (box_l[0] * box_l[1] * box_l[2] * rho_cp) << endl;
     }
 
     void set_rho(double r){
@@ -59,17 +60,17 @@ struct simulation{
 
     void propose_NVT(){
         pmoved = rint();
-        if(rand() < 0.5){
+        if(rdouble() < 0.5){
             for(int j=0; j<ndim; j++){
-                part_proposed[pmoved].pos[j] = part[pmoved].pos[j] + (2 * rdouble() - 1) * dl;
-                part_proposed[pmoved].pos[j] -= box_l[j] * floor(part_proposed[pmoved].pos[j]/box_l[j]);
+                p_temp.pos[j] = part[pmoved].pos[j] + (2 * rdouble() - 1) * dl;
+                p_temp.pos[j] -= box_l[j] * floor(p_temp.pos[j]/box_l[j]);
             }
         }
         else{
             for(int j=0; j<ndim; j++){
-                part_proposed[pmoved].dir[j] = part[pmoved].dir[j] + (2 * rdouble() - 1) * dn;
+                p_temp.dir[j] = part[pmoved].dir[j] + (2 * rdouble() - 1) * dn;
             }
-            normalize(part_proposed[pmoved].dir);
+            normalize(p_temp.dir);
         }
     }
 
@@ -78,13 +79,19 @@ struct simulation{
         set_rho(rho + drho * (2 * rdouble() - 1));
     }
 
-    void accept_proposal(){
+    void accept_proposal_NVT(){
+        accept++;
+        accept_rate = (double)accept/step;
+        part[pmoved] = p_temp;
+    }
+
+    void accept_proposal_NPT(){
         accept++;
         accept_rate = (double)accept/step;
         for(int i=0; i<N; i++){
             part[i] = part_proposed[i];
         }
-        for(int i =0; i<ndim; i++){
+        for(int i=0; i<ndim; i++){
             box_l[i] = box_l_proposed[i];
         }
     }
@@ -97,10 +104,11 @@ struct simulation{
         return (dist_rods(p1, p2, box_l, L) < D2);
     }
 
-    bool exists_initial_overlap(){
+    bool exists_general_overlap(){
         for(int i=0; i<N-1; i++){
             for(int j=i+1; j<N; j++){
-                if(they_overlap(part_proposed[i], part_proposed[j]))
+                //if(they_overlap(part_proposed[i], part_proposed[j]))
+                if(they_overlap(part[i], part[j]))
                     return true;
             }
         }
@@ -109,8 +117,8 @@ struct simulation{
 
     bool exists_overlap(){
         for(int i=0; i<N; i++){
-            if(pmoved != i){
-                if(they_overlap(part_proposed[pmoved], part_proposed[i]))
+            if(i != pmoved){
+                if(they_overlap(part[i], p_temp))
                     return true;
             }
         }
@@ -119,7 +127,8 @@ struct simulation{
 
     void metropolis_acceptance_NVT(){
         if(!exists_overlap()){
-            accept_proposal();
+            //cout << " exists_overlap " << exists_overlap() << endl;
+            accept_proposal_NVT();
         }
     }
 
@@ -128,7 +137,7 @@ struct simulation{
             double V      = pow(box_l[0], 3);
             double V_prop = pow(box_l_proposed[0], 3);
             if(rdouble() < exp(-betaP*(V_prop - V) + N * log(V_prop/V))){
-                accept_proposal();
+                accept_proposal_NPT();
             }
         }
     }

@@ -98,7 +98,7 @@ struct dynamics{
 
     void write_positions_to_file(){
         char filename[128];
-        sprintf(filename, "coords/coords_step%07d.dat", step);
+        sprintf(filename, "coords1/coords_step%07d.dat", step);
 
         ofstream file;
         file.open(filename);

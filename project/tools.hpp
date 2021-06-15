@@ -130,12 +130,10 @@ vector<vector<double>> rotation_matrix(vector<double> &n){
     return rot_matrix;
 }
 
-void init_particle_file(ofstream &file, int N, vector<double> &box_l){
-}
+void write_config_to_file(int step, int &N, vector<double> &box_l, vector<particle> &part, double &L, double &D, string &folder){
 
-void write_config_to_file(int step, int &N, vector<double> &box_l, vector<particle> &part, double &L, double &D){
-    char filename[128];
-    sprintf(filename, "coords/coords_step%07d.dat", step);
+    string step_str = to_string(step);
+    string filename = folder + "/coords_step_" + string(9 - step_str.length(), '0') + step_str + ".dat";
 
     ofstream file;
     file.open(filename);
