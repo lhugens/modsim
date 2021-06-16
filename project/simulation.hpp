@@ -41,7 +41,6 @@ struct simulation{
         box_l = box_l_c;
         N     = N_c;
         V = box_l[0] * box_l[1] * box_l[2];
-        //cout << "rho " << N * v0 / (box_l[0] * box_l[1] * box_l[2] * rho_cp) << endl;
     }
 
     void scale(double scale_factor){
@@ -74,12 +73,15 @@ struct simulation{
         }
     }
 
+    void NVT_step(){
+        propose_NVT();
+        metropolis_acceptance_NVT();
+    }
+
     void NPT_step(){
         if(rdouble() < pvol){
             rho_proposed = rho + drho * (2 * rdouble() - 1);
-            //cout << "rho " << rho << " rho_proposed " << rho_proposed << endl;
 
-            // dont do anything if the proposed density is negative
             if(rho_proposed < 1e-4){
                 return;
             }
@@ -87,14 +89,19 @@ struct simulation{
             double factor = scale_factor(rho_proposed);
             scale(factor);
 
+            /*
             cout << endl;
             cout << "betaP:     " << betaP << endl;
+            cout << "V:         " << V << endl;
             cout << "delta_rho: " << rho_proposed - rho << endl;
+            cout << "delta_V:   " << V_proposed - V << endl; 
             cout << "acc:       " << exp(-betaP*(V_proposed - V) + N * log(V_proposed/V)) << endl;
+            cout << "acc1_term: " << -betaP*(V_proposed - V) << endl;
+            cout << "acc2_term: " <<  N * log(V_proposed/V)  << endl;
+            */
 
             if(!exists_general_overlap() && (rdouble() < exp(-betaP*(V_proposed - V) + N * log(V_proposed/V)))){
-                cout << "accepted!" << endl;
-                //cout << "Changed Volume" << endl;
+                //cout << "accepted!" << endl;
                 V = V_proposed;
                 rho = rho_proposed;
                 accept++;
@@ -105,8 +112,7 @@ struct simulation{
         }
         else{
             //cout << "NVT" << endl;
-            propose_NVT();
-            metropolis_acceptance_NVT();
+            NVT_step();
         }
     }
 

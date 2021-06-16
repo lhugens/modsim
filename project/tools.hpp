@@ -133,7 +133,7 @@ vector<vector<double>> rotation_matrix(vector<double> &n){
 void write_config_to_file(int step, int &N, vector<double> &box_l, vector<particle> &part, double &L, double &D, string &folder){
 
     string step_str = to_string(step);
-    string filename = folder + "/coords_step_" + string(9 - step_str.length(), '0') + step_str + ".dat";
+    string filename = folder + "_step_" + string(9 - step_str.length(), '0') + step_str + ".dat";
 
     ofstream file;
     file.open(filename);

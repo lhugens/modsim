@@ -29,8 +29,7 @@ void NVT(string folder, double rho, double L, int total_steps, int write_steps){
     while(s.step < total_steps){
         for(int i=0; i<write_steps; i++){
             s.step++;
-            s.propose_NVT();
-            s.metropolis_acceptance_NVT();
+            s.NVT_step();
         }
         s.write_config(s.step);
         cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" << " acc. rate: " << s.accept_rate << flush;
@@ -53,14 +52,20 @@ void NPT(int betaPv0_no, string folder, double betaPv0, double rho_initial, doub
     s.fcc_config(5, rho_initial);
     s.betaP = betaPv0 / s.v0;
     s.write_config(0);
-    cout << "betaP " << s.betaP << endl;
-    cout << "rho   " << s.rho << endl;
 
     // make sure there's no overlap at the start
     assert(!(s.exists_general_overlap()));
 
-    while(s.step < total_steps){
+    for(int i=0; i<1e4; i++){
+        s.step++;
+        s.NVT_step();
+    }
+
+    int sstep = 0;
+    while(sstep < total_steps){
+    //while(s.step < total_steps){
         for(int i=0; i<write_steps; i++){
+            sstep++;
             s.step++;
             s.NPT_step();
         }
@@ -69,7 +74,8 @@ void NPT(int betaPv0_no, string folder, double betaPv0, double rho_initial, doub
         // dont forget to take this out
         file << left << setw(20) << s.step << setw(20) << s.rho << endl;
 
-        cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
+        //cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
+        cout << "\r [" << setw(3) << round((double)sstep * 100 /total_steps)  << "%]" 
              << " betaPv0: "   << setw(3) << betaPv0 
              << " acc. rate: " << setw(10) << s.accept_rate
              << " rho: "       << setw(10) << s.rho
@@ -92,18 +98,19 @@ void EOS(){
     int betaPv0_no  = 10;
     double delta = (betaPv0_max - betaPv0_min) / (double)betaPv0_no;
 
+
     for(int i=0; i<betaPv0_no+1; i++){
-        NPT(i, "coords_EOS", betaPv0_min+delta*i, 0.3, 3, 1e5, 1e3, 1e2);
+        string no_str = to_string(i);
+        string folder = "coords_EOS/coords_" + string(3 - no_str.length(), '0') + no_str;
+        NPT(i, folder, betaPv0_min+delta*i, 0.3, 3, 1e4, 100, 1e2);
     }
+}
+
+void new_EOS(){
 }
 
 int main(){
     dsfmt_seed(time(NULL));
-    NPT(0, "coords_EOS", 2.0, 0.3, 3, 1e4, 10, 0);
+    //NPT(0, "coords_EOS", 2.0, 0.3, 3, 1e4, 10, 0);
+    EOS();
 }
-
-
-
-
-
-
