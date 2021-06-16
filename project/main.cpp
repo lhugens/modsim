@@ -23,6 +23,8 @@ void NVT(string folder, double rho, double L, int total_steps, int write_steps){
     // write to config to file
     s.write_config(0);
 
+    s.S = 1;
+
     // make sure there's no overlap at the start
     assert(!(s.exists_general_overlap()));
 
@@ -31,9 +33,14 @@ void NVT(string folder, double rho, double L, int total_steps, int write_steps){
             s.step++;
             s.NVT_step();
         }
+        s.update_S();
         s.write_config(s.step);
-        cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" << " acc. rate: " << s.accept_rate << flush;
+        cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
+             << " acc. rate: " << setw(10) << s.accept_rate 
+             << " S: " << setw(10) << s.S
+             << flush;
     }
+    s.write_config(s.step);
     cout << endl;
 
 }
@@ -56,14 +63,16 @@ void NPT(int betaPv0_no, string folder, double betaPv0, double rho_initial, doub
     // make sure there's no overlap at the start
     assert(!(s.exists_general_overlap()));
 
+    /*
     for(int i=0; i<1e4; i++){
         s.step++;
         s.NVT_step();
     }
+    */
 
     int sstep = 0;
-    while(sstep < total_steps){
-    //while(s.step < total_steps){
+    //while(sstep < total_steps){
+    while(s.step < total_steps){
         for(int i=0; i<write_steps; i++){
             sstep++;
             s.step++;
@@ -74,8 +83,8 @@ void NPT(int betaPv0_no, string folder, double betaPv0, double rho_initial, doub
         // dont forget to take this out
         file << left << setw(20) << s.step << setw(20) << s.rho << endl;
 
-        //cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
-        cout << "\r [" << setw(3) << round((double)sstep * 100 /total_steps)  << "%]" 
+        //cout << "\r [" << setw(3) << round((double)sstep * 100 /total_steps)  << "%]" 
+        cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
              << " betaPv0: "   << setw(3) << betaPv0 
              << " acc. rate: " << setw(10) << s.accept_rate
              << " rho: "       << setw(10) << s.rho
@@ -106,17 +115,17 @@ void EOS(){
     }
 }
 
+// run this to see that for our initial fcc, S = 1
 void order_parameter(){
-
     simulation s("dont_matter", 3);
     s.fcc_config(5, 0.5);
     s.update_S();
-
 }
 
 int main(){
     dsfmt_seed(time(NULL));
-    //NPT(0, "coords_EOS", 2.0, 0.3, 3, 1e4, 10, 0);
+
+    NVT("coords_LIQUID/coords_", 0.5, 3.5, 1e5, 1e4);
+    //NPT(0, "coords_EOS/coords_", 2.0, 0.3, 3, 1e3, 1, 0);
     //EOS();
-    order_parameter();
 }
