@@ -2,23 +2,25 @@ struct simulation{
     int N;                              // number of particles
     int step = 0;                       // current step of simulation
     int accept = 0;                     // number of accepted proposals
-    int pmoved;
+    int pmoved;                         // suggested particle to be displaced
     double L;                           // length of the spherocylinders
     double D  = 1;                      // Diameter of the cylinders
     double D2 = pow(D, 2);              // Diameter**2
-    double dl = 0.1;                   // maximum proposed displacement for each component
+    double dl = 0.1;                    // maximum proposed displacement for each component
     double dn = 0.05;                   // maximum proposed change in direction for each component
     double drho = 0.001;                // maximum proposed change in rho
-    double betaP = 1;
+    double betaP = 1;                   // pressure P, temperature P/(k_B P T)
+    double pvol = 0.5;                  // probability to propose a change in volume
     double rho;                         // density of the system (volume occupied by particles / total volume)
+    double rho_proposed;                // density of the system (volume occupied by particles / total volume)
     double v0;                          // volume of one particle
+    double V;                           // volume of the box
+    double V_proposed;                  // proposed volume of the box
     double rho_cp;                      // close packed density 
     double accept_rate;                 // acceptance rate
     particle p_temp;                    // temporary particle holder
     vector<double> box_l;               // coordinates of box corners, one is at the origin
-    vector<double> box_l_proposed;      // coordinates of box corners, one is at the origin
     vector<particle> part;              // main particle matrix
-    vector<particle> part_proposed;     // main particle matrix
     string folder;                      // folder name to ouput coords
 
     simulation(string f, double l) : folder(f), L(l) 
@@ -32,30 +34,28 @@ struct simulation{
     // random integers from in the interval [0, N-1] 
     inline double rint(){return (int)(dsfmt_genrand() * N);}
 
-
     void fcc_config(int N_side, double rho_initial){
+        rho = rho_initial;
         auto [part_c, box_l_c, N_c] = fcc_config_initial(N_side, L, rho_initial);
         part  = part_c;
         box_l = box_l_c;
         N     = N_c;
-        part_proposed = part;
-        box_l_proposed = box_l;
+        V = box_l[0] * box_l[1] * box_l[2];
         //cout << "rho " << N * v0 / (box_l[0] * box_l[1] * box_l[2] * rho_cp) << endl;
     }
 
-    void set_rho(double r){
-        rho = r;
-
-        double current_volume = box_l[0] * box_l[1] * box_l[2];
-        double desired_volume = N * v0 / (rho * rho_cp);
-        double scale_factor   = cbrt(desired_volume / current_volume);
-
+    void scale(double scale_factor){
         for(int j=0; j<ndim; j++){
             for(int i=0; i<N; i++){
-                part_proposed[i].pos[j] *= scale_factor;
+                part[i].pos[j] *= scale_factor;
             }
-            box_l_proposed[j] *= scale_factor;
+            box_l[j] *= scale_factor;
         }
+    }
+
+    double scale_factor(double r){
+        V_proposed = N * v0 / (r * rho_cp);
+        return cbrt(V_proposed / V);
     }
 
     void propose_NVT(){
@@ -74,40 +74,49 @@ struct simulation{
         }
     }
 
-    void propose_NPT(){
-        propose_NVT();
-        set_rho(rho + drho * (2 * rdouble() - 1));
-    }
+    void NPT_step(){
+        if(rdouble() < pvol){
+            rho_proposed = rho + drho * (2 * rdouble() - 1);
+            //cout << "rho " << rho << " rho_proposed " << rho_proposed << endl;
 
-    void accept_proposal_NVT(){
-        accept++;
-        accept_rate = (double)accept/step;
-        part[pmoved] = p_temp;
-    }
+            // dont do anything if the proposed density is negative
+            if(rho_proposed < 1e-4){
+                return;
+            }
 
-    void accept_proposal_NPT(){
-        accept++;
-        accept_rate = (double)accept/step;
-        for(int i=0; i<N; i++){
-            part[i] = part_proposed[i];
+            double factor = scale_factor(rho_proposed);
+            scale(factor);
+
+            cout << endl;
+            cout << "betaP:     " << betaP << endl;
+            cout << "delta_rho: " << rho_proposed - rho << endl;
+            cout << "acc:       " << exp(-betaP*(V_proposed - V) + N * log(V_proposed/V)) << endl;
+
+            if(!exists_general_overlap() && (rdouble() < exp(-betaP*(V_proposed - V) + N * log(V_proposed/V)))){
+                cout << "accepted!" << endl;
+                //cout << "Changed Volume" << endl;
+                V = V_proposed;
+                rho = rho_proposed;
+                accept++;
+            }
+            else{
+                scale(1/factor);
+            }
         }
-        for(int i=0; i<ndim; i++){
-            box_l[i] = box_l_proposed[i];
+        else{
+            //cout << "NVT" << endl;
+            propose_NVT();
+            metropolis_acceptance_NVT();
         }
     }
 
     bool they_overlap(particle &p1, particle &p2){
-        //print(p1);
-        //print(p2);
-        //cout << sqrt(dist_rods(p1, p2, box_l, L)) << endl;
-        //cout << endl;
         return (dist_rods(p1, p2, box_l, L) < D2);
     }
 
     bool exists_general_overlap(){
         for(int i=0; i<N-1; i++){
             for(int j=i+1; j<N; j++){
-                //if(they_overlap(part_proposed[i], part_proposed[j]))
                 if(they_overlap(part[i], part[j]))
                     return true;
             }
@@ -127,19 +136,14 @@ struct simulation{
 
     void metropolis_acceptance_NVT(){
         if(!exists_overlap()){
-            //cout << " exists_overlap " << exists_overlap() << endl;
             accept_proposal_NVT();
         }
     }
 
-    void metropolis_acceptance_NPT(){
-        if(!exists_overlap()){
-            double V      = pow(box_l[0], 3);
-            double V_prop = pow(box_l_proposed[0], 3);
-            if(rdouble() < exp(-betaP*(V_prop - V) + N * log(V_prop/V))){
-                accept_proposal_NPT();
-            }
-        }
+    void accept_proposal_NVT(){
+        accept++;
+        accept_rate = (double)accept/step;
+        part[pmoved] = p_temp;
     }
 
 };
