@@ -4,8 +4,9 @@ struct simulation{
     int accept = 0;                     // number of accepted proposals
     int pmoved;                         // suggested particle to be displaced
     double L;                           // length of the spherocylinders
-    double D  = 1;                      // Diameter of the cylinders
-    double D2 = pow(D, 2);              // Diameter**2
+    double D  = 1;                      // diameter of the cylinders
+    double D2 = pow(D, 2);              // diameter**2
+    double S;                           // nematic order parameter
     double dl = 0.1;                    // maximum proposed displacement for each component
     double dn = 0.05;                   // maximum proposed change in direction for each component
     double drho = 0.001;                // maximum proposed change in rho
@@ -41,6 +42,24 @@ struct simulation{
         box_l = box_l_c;
         N     = N_c;
         V = box_l[0] * box_l[1] * box_l[2];
+    }
+
+    void update_S(){
+        S = 0;
+        vector<double> director(ndim);
+        for(int i=0; i<N; i++){
+            for(int j=0; j<ndim; j++){
+                director[j] += part[i].dir[j];
+            }
+        }
+        normalize(director);
+
+        for(int i=0; i<N; i++){
+            S += pow(v_sprod(director, part[i].dir), 2);
+        }
+
+        double Sb = (3*S / (double)N - 1)/2;
+        cout << Sb << endl;
     }
 
     void scale(double scale_factor){

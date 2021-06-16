@@ -106,11 +106,17 @@ void EOS(){
     }
 }
 
-void new_EOS(){
+void order_parameter(){
+
+    simulation s("dont_matter", 3);
+    s.fcc_config(5, 0.5);
+    s.update_S();
+
 }
 
 int main(){
     dsfmt_seed(time(NULL));
     //NPT(0, "coords_EOS", 2.0, 0.3, 3, 1e4, 10, 0);
-    EOS();
+    //EOS();
+    order_parameter();
 }
