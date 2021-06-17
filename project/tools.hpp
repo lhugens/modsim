@@ -20,15 +20,15 @@ double v_sprod(vector<double> &v1, vector<double> &v2){
 
 double v_norm2(vector<double> &v){
     double sum = 0;
-    for(auto x : v){
-        sum += pow(x, 2);
+    for(int i=0; i<ndim; i++){
+        sum += pow(v[i], 2);
     }
     return sum;
 }
 
 void normalize(vector<double> &v){
     double normm = sqrt(v_norm2(v));
-    for(int i=0; i<v.size(); i++){
+    for(int i=0; i<ndim; i++){
         v[i] /= normm;
     }
 }
@@ -36,10 +36,10 @@ void normalize(vector<double> &v){
 void print(particle &p){
     cout << left;
     for(int i=0; i<ndim; i++){
-        cout << setw(10) << p.pos[i];
+        cout << setw(15) << p.pos[i];
     }
     for(int i=0; i<ndim; i++){
-        cout << setw(10) << p.dir[i];
+        cout << setw(15) << p.dir[i];
     }
     cout << endl;
 }
@@ -56,6 +56,16 @@ void print(vector<double> &v){
         cout << x << endl;
     }
 }
+
+void print(vector<vector<double>> &v){
+    for(auto x : v){
+        for(auto y : x){
+            cout << left << setw(10) << y;
+        }
+        cout << endl;
+    }
+}
+
 
 static inline double sign(double a, double b){ 
     a = fabs(a);
@@ -118,15 +128,24 @@ double dist_rods(particle &p1, particle &p2, vector<double> &box_l, double &L){
 }
 
 vector<vector<double>> rotation_matrix(vector<double> &n){
-    double sin_the = sqrt(pow(n[0], 2) + pow(n[1], 2));
     double cos_the = n[2]; 
-    double cos_phi = sin_the ? n[0] / sin_the : 1.0;
-    double sin_phi = sin_the ? n[1] / sin_the : 0.0;
+    double sin_the = sqrt(pow(n[0], 2) + pow(n[1], 2));
+    bool gimbal_lock = sin_the < 1e-7;
+    double cos_phi = gimbal_lock ? 1.0 : n[0] / sin_the;
+    double sin_phi = gimbal_lock ? 0.0 : n[1] / sin_the;
+    /*
+    cout << "cos_the " << cos_the << endl; 
+    cout << "sin_the " << sin_the << endl; 
+    cout << "cos_phi " << cos_phi << endl; 
+    cout << "sin_phi " << sin_phi << endl; 
+    cout << endl;
+    */
 
     vector<vector<double>> rot_matrix {{cos_phi*cos_the, -sin_phi, -n[0]},
                                        {sin_phi*cos_the,  cos_phi, -n[1]},
                                        {sin_the,                0,  n[2]}};
  
+    //print(rot_matrix);
     return rot_matrix;
 }
 
@@ -164,6 +183,48 @@ void write_config_to_file(int step, int &N, vector<double> &box_l, vector<partic
         file << endl;
     }
     file.close();
+}
+
+tuple<vector<particle>, vector<double>, int, double> file_config_initial(string filename){
+    vector<particle> part;
+    vector<double> box_l(ndim);
+    particle p_temp;
+
+    string trash;
+    double g, n;
+    int N;
+
+    ifstream infile("liquid_config.dat");
+    string line;
+
+    infile >> N;
+
+    // read box
+    for (int i = 0; i < ndim; i++){
+        infile >> g >> box_l[i];
+    }
+
+    for(int i=0; i<N; i++){
+        infile >> trash;
+
+        for(int j=0; j<ndim; j++){
+            infile >> p_temp.pos[j];
+        }
+        infile >> g >> g >> n;
+        p_temp.dir[0] = -n;
+        infile >> g >> g >> n;
+        p_temp.dir[1] = -n;
+        infile >> g >> g >> n;
+        p_temp.dir[2] = n;
+
+    	part.push_back(p_temp);
+    }
+
+    unsigned first = trash.find("(");
+    unsigned last = trash.find(")");
+    string new_trash = trash.substr(first+1, last-first-1);
+    double L = stod(new_trash);
+    return {part, box_l, N, L};
 }
 
 tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, double L, double rho){
@@ -240,4 +301,5 @@ tuple<vector<particle>, vector<double>, int> fcc_config_initial(int N_side, doub
 
     return {part, box_l, N};
 }
+
 

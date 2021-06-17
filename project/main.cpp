@@ -40,7 +40,7 @@ void NVT(string folder, double rho, double L, int total_steps, int write_steps){
              << " S: " << setw(10) << s.S
              << flush;
     }
-    s.write_config(s.step);
+    print(s.part);
     cout << endl;
 
 }
@@ -125,7 +125,14 @@ void order_parameter(){
 int main(){
     dsfmt_seed(time(NULL));
 
-    NVT("coords_LIQUID/coords_", 0.5, 3.5, 1e5, 1e4);
+    //NVT("coords_LIQUID/coords_", 0.5, 3.5, 1e5, 1e4);
     //NPT(0, "coords_EOS/coords_", 2.0, 0.3, 3, 1e3, 1, 0);
     //EOS();
+
+    // current idea: start with an fcc at a low density, perform NVT 
+    // to get it to a liquid phase, with all positions and orientations
+    // random, and then perform NPT at high pressure to make the density 
+    // go up until we have a desired one, like 0.3
+
+    NVT("LIQUID_CONFIG/coords", 0.3, 3.0, 1e5, 1e3);
 }

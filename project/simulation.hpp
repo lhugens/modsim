@@ -7,8 +7,8 @@ struct simulation{
     double D  = 1;                      // diameter of the cylinders
     double D2 = pow(D, 2);              // diameter**2
     double S;                           // nematic order parameter
-    double dl = 0.1;                   // maximum proposed displacement for each component
-    double dn = 0.1;                   // maximum proposed change in direction for each component
+    double dl = 0.5;                   // maximum proposed displacement for each component
+    double dn = 0.5;                   // maximum proposed change in direction for each component
     double dV = 100;                    // maximum proposed change in volume
     double betaP = 1;                   // pressure P, temperature P/(k_B P T)
     double pvol = 0.5;                  // probability to propose a change in volume
@@ -32,6 +32,16 @@ struct simulation{
     inline void write_config(int step_no){write_config_to_file(step_no, N, box_l, part, L, D, folder);}
 
     inline double rint(){return (int)(dsfmt_genrand() * N);}
+
+    void file_config(string filename){
+        auto [part_c, box_l_c, N_c, L_c] = file_config_initial(filename);
+        part = part_c;
+        N = N_c;
+        box_l = box_l_c;
+        L = L_c;
+        rho_cp = 2 / (sqrt(2) + (L/D)*sqrt(3));
+        v0 = M_PI * (L * pow(D, 2) / 4 + pow(D, 3) / 6);
+    }
 
     void fcc_config(int N_side, double rho_initial){
         rho = rho_initial;
