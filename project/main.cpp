@@ -46,61 +46,59 @@ void NVT(string folder, double rho, double L, int total_steps, int write_steps){
 
 }
 
-void NPT(int betaPv0_no, string folder, double betaPv0, double rho_initial, double L, int total_steps, int write_steps, int measure_steps){
+void S_L_plot(){
+    double rho = 0.3;
+    double L_min = 3.0;
+    double L_max = 5.0;
+    int L_no  = 5;
+    double delta = (L_max - L_min) / (double)L_no;
 
-    string no_str = to_string(betaPv0_no);
-    string filename = "EOS/EOS_" + string(3 - no_str.length(), '0') + no_str + ".dat";
+    int total_steps = 1e6;
+    int fast_steps = 1e3;
+    int measure_steps = 1e3;
 
-    ofstream file;
-    file.open(filename);
-    file << betaPv0 << endl;
+    for(int i=0; i<L_no; i++){
+        string no_str = to_string(i);
+        string filename = "SL/SL_" + string(3 - no_str.length(), '0') + no_str + ".dat";
+        string folder = "coords_SL/coords" + string(3 - no_str.length(), '0') + no_str;
+        ofstream file;
+        file.open(filename);
 
-    // create simulation and fix length L
-    simulation s(folder, L);
-    s.fcc_config(5, rho_initial);
-    s.betaP = betaPv0 / s.v0;
-    s.write_config(0);
+        double L = L_min+delta*i;
 
-    // make sure there's no overlap at the start
-    assert(!(s.exists_general_overlap()));
+        file << L << endl;
 
-    /*
-    for(int i=0; i<1e4; i++){
-        s.step++;
-        s.NVT_step();
-    }
-    */
+        simulation s(folder, L);
+        s.dl = 0.1;
+        s.dn = 0.5;
+        s.fcc_config(5, rho);
+        s.print_parameters();
+        assert(!(s.exists_general_overlap()));
 
-    int sstep = 0;
-    //while(sstep < total_steps){
-    while(s.step < total_steps){
-        for(int i=0; i<write_steps; i++){
-            sstep++;
-            s.step++;
-            s.NPT_step();
+        while(s.step < total_steps){
+            s.NVT_run(fast_steps);
+            s.update_S();
+            s.write_config(s.step);
+            cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
+                 << " acc. rate: " << setw(10) << s.accept_rate 
+                 << " rho: " << setw(10) << s.rho
+                 << " S: " << setw(10) << s.S
+                 << flush;
         }
-        s.write_config(s.step);
+        cout << endl;
 
-        // dont forget to take this out
-        file << left << setw(20) << s.step << setw(20) << s.rho << endl;
+        for(int i=0; i<measure_steps; i++){
+            s.step++;
+            s.NVT_step();
+            s.update_S();
+            file << left << setw(20) << i << setw(20) << s.S << endl;
+        }
+        file.close();
 
-        //cout << "\r [" << setw(3) << round((double)sstep * 100 /total_steps)  << "%]" 
-        cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
-             << " betaPv0: "   << setw(3) << betaPv0 
-             << " acc. rate: " << setw(10) << s.accept_rate
-             << " rho: "       << setw(10) << s.rho
-             << flush;
     }
-    cout << endl;
-
-    for(int i=0; i<measure_steps; i++){
-        s.step++;
-        s.NPT_step();
-        file << left << setw(20) << i << setw(20) << s.rho << endl;
-    }
-
-    file.close();
+    
 }
+
 
 void EOS(){
     // preparing betaPv0 values
@@ -112,16 +110,16 @@ void EOS(){
     // steps control
     int total_steps = 1e6;
     int fast_steps = 1e3;
-    int measure_steps = 1e3;
+    int measure_steps = 1e4;
 
     simulation s("", 3);
-    s.file_config("liquid_0.3.dat");
+    s.file_config("liquid_0.374.dat");
 
     // MC proposals
-    s.pvol = 0.5;
-    s.dl = 0.05;
-    s.dl = 0.05;
+    s.dl = 0.01;
+    s.dn = 0.1;
     s.dV = 10;
+    s.pvol = 0.1;
 
     for(int i=0; i<betaPv0_no; i++){
 
@@ -171,20 +169,28 @@ void NPT_1_value(){
     s.file_config("liquid_0.374.dat");
     double betaPv0 = 2;
     s.betaP = betaPv0 / s.v0;
-    s.pvol = 0.5;
-    s.dl = 0.05;
-    s.dl = 0.05;
+
+    ofstream file;
+    file.open("NPT/eos");
+    file << betaPv0 << endl;
+
+    s.dl = 0.01;
+    s.dn = 0.1;
     s.dV = 10;
+    s.pvol = 0.1;
     s.print_parameters();
-    /*
-    s.write_config(0);
+    //s.write_config(0);
 
     int total_steps = 1e6;
     int fast_steps = 1e3;
+    int counter = 0;
 
-    while(s.step < total_steps){
+    while(true){
         s.NPT_run(fast_steps);
-        s.write_config(s.step);
+        counter++;
+        //s.write_config(s.step);
+        s.update_S();
+        file << left << setw(20) << counter << setw(20) << s.rho << setw(20) << s.S << endl;
 
         cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
              << " acc. rate: " << setw(10) << s.accept_rate
@@ -192,11 +198,14 @@ void NPT_1_value(){
              << flush;
     }
     cout << endl;
-    */
 }
+
 
 int main(){
     dsfmt_seed(time(NULL));
+    //EOS();
+    //NPT_1_value();
+    S_L_plot();
 
 
 }

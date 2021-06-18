@@ -181,6 +181,13 @@ struct simulation{
             NPT_step();
         }
     }
+
+    void NVT_run(int steps){
+        for(int i=0; i<steps; i++){
+            step++;
+            NVT_step();
+        }
+    }
 };
 
 

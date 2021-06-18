@@ -143,6 +143,95 @@ NVT("coords_LIQUID/coords_", 0.5, 3.5, 1e5, 1e4);
 NPT(0, "coords_EOS/coords_", 2.0, 0.3, 3, 1e3, 1, 0);
 EOS();
 NVT("LIQUID_CONFIG/coords", 0.3, 3.0, 1e5, 1e3);
+
+void NPT(int betaPv0_no, string folder, double betaPv0, double rho_initial, double L, int total_steps, int write_steps, int measure_steps){
+
+    string no_str = to_string(betaPv0_no);
+    string filename = "EOS/EOS_" + string(3 - no_str.length(), '0') + no_str + ".dat";
+
+    ofstream file;
+    file.open(filename);
+    file << betaPv0 << endl;
+
+    // create simulation and fix length L
+    simulation s(folder, L);
+    s.fcc_config(5, rho_initial);
+    s.betaP = betaPv0 / s.v0;
+    s.write_config(0);
+
+    // make sure there's no overlap at the start
+    assert(!(s.exists_general_overlap()));
+
+    for(int i=0; i<1e4; i++){
+        s.step++;
+        s.NVT_step();
+    }
+
+    int sstep = 0;
+    //while(sstep < total_steps){
+    while(s.step < total_steps){
+        for(int i=0; i<write_steps; i++){
+            sstep++;
+            s.step++;
+            s.NPT_step();
+        }
+        s.write_config(s.step);
+
+        // dont forget to take this out
+        file << left << setw(20) << s.step << setw(20) << s.rho << endl;
+
+        //cout << "\r [" << setw(3) << round((double)sstep * 100 /total_steps)  << "%]" 
+        cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
+             << " betaPv0: "   << setw(3) << betaPv0 
+             << " acc. rate: " << setw(10) << s.accept_rate
+             << " rho: "       << setw(10) << s.rho
+             << flush;
+    }
+    cout << endl;
+
+    for(int i=0; i<measure_steps; i++){
+        s.step++;
+        s.NPT_step();
+        file << left << setw(20) << i << setw(20) << s.rho << endl;
+    }
+
+    file.close();
+}
+
+vector<double> dls   = {0.001, 0.01, 0.1};
+vector<double> dns   = {0.001, 0.01, 0.1};
+vector<double> dVs   = {1, 10, 100};
+vector<double> pvols = {0.1, 0.3, 0.5};
+
+cout << left << setw(7) << "dl"
+             << setw(7) << "dn"
+             << setw(7) << "dV"
+             << setw(7) << "pV"
+             << setw(7) << "ar" << endl;
+
+for(auto dll : dls){
+    for(auto dnn : dns){
+        for(auto dVV : dVs){
+            for(auto pvoll : pvols){
+                s.dl = dll;
+                s.dn = dnn;
+                s.dV = dVV;
+                s.pvol = pvoll;
+                s.file_config("liquid_0.374.dat");
+                s.step = 0;
+                s.accept = 0;
+                s.NPT_run(1e3);
+                cout << left;
+                cout << setw(7) << s.dl;
+                cout << setw(7) << s.dn;
+                cout << setw(7) << s.dV;
+                cout << setw(7) << s.pvol;
+                cout << setw(7) << s.accept_rate;
+                cout << endl;
+            }
+        }
+    } 
+}
 */
 
 int main(){

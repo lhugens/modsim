@@ -7,7 +7,11 @@ coords_LIQUID1
 coords_NEMATIC
 coords_NEMATIC0
 coords_NEMATIC1
+coords_SL
 EOS
 LIQUID_CONFIG
 NPT
+parameters.txt
+plots
+SL
 TEST
