@@ -133,19 +133,11 @@ vector<vector<double>> rotation_matrix(vector<double> &n){
     bool gimbal_lock = sin_the < 1e-7;
     double cos_phi = gimbal_lock ? 1.0 : n[0] / sin_the;
     double sin_phi = gimbal_lock ? 0.0 : n[1] / sin_the;
-    /*
-    cout << "cos_the " << cos_the << endl; 
-    cout << "sin_the " << sin_the << endl; 
-    cout << "cos_phi " << cos_phi << endl; 
-    cout << "sin_phi " << sin_phi << endl; 
-    cout << endl;
-    */
 
-    vector<vector<double>> rot_matrix {{cos_phi*cos_the, -sin_phi, -n[0]},
-                                       {sin_phi*cos_the,  cos_phi, -n[1]},
-                                       {sin_the,                0,  n[2]}};
+    vector<vector<double>> rot_matrix {{cos_the*cos_phi, cos_the*sin_phi, -sin_the},
+                                       {-sin_phi, cos_phi, 0},
+                                       {n[0], n[1], n[2]}};
  
-    //print(rot_matrix);
     return rot_matrix;
 }
 

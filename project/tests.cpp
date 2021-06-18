@@ -247,12 +247,12 @@ int main(){
 
     part.push_back(p);
 
-    p.pos = {3, 3, 3};
+    p.pos = {1, 5, 1};
     p.dir = {0, 1, 0};
 
     part.push_back(p);
 
-    p.pos = {5, 5, 5};
+    p.pos = {1, 7, 1};
     p.dir = {1, 0, 0};
 
     part.push_back(p);
