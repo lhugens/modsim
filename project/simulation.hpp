@@ -7,11 +7,11 @@ struct simulation{
     double D  = 1;                      // diameter of the cylinders
     double D2 = pow(D, 2);              // diameter**2
     double S;                           // nematic order parameter
-    double dl = 0.5;                   // maximum proposed displacement for each component
-    double dn = 0.5;                   // maximum proposed change in direction for each component
-    double dV = 100;                    // maximum proposed change in volume
+    double dl = 0.1;                    // maximum proposed displacement for each component
+    double dn = 0.1;                    // maximum proposed change in direction for each component
+    double dV = 1;                      // maximum proposed change in volume
     double betaP = 1;                   // pressure P, temperature P/(k_B P T)
-    double pvol = 0.5;                  // probability to propose a change in volume
+    double pvol = 0.1;                  // probability to propose a change in volume
     double rho;                         // density of the system (volume occupied by particles / total volume)
     double v0;                          // volume of one particle
     double V;                           // volume of the box
@@ -33,14 +33,41 @@ struct simulation{
 
     inline double rint(){return (int)(dsfmt_genrand() * N);}
 
+    void print_parameters(){
+        cout << "PARAMETERS" << endl;
+        cout << endl;
+        cout << left << setw(10) << "set N"    << setw(10) << N << endl;
+        cout << left << setw(10) << "real N"   << setw(10) << part.size() << endl;
+        cout << left << setw(10) << "L"        << setw(10) << L << endl;
+        cout << left << setw(10) << "set V"    << setw(10) << V << endl;
+        cout << left << setw(10) << "real V"   << setw(10) << box_l[0] * box_l[1] * box_l[2] << endl;
+        cout << left << setw(10) << "box_l[0]" << setw(10) << box_l[0] << endl;
+        cout << left << setw(10) << "box_l[1]" << setw(10) << box_l[1] << endl;
+        cout << left << setw(10) << "box_l[2]" << setw(10) << box_l[2] << endl;
+        cout << left << setw(10) << "set rho"  << setw(10) << rho << endl;
+        cout << left << setw(10) << "real rho" << setw(10) << N * v0 / (V * rho_cp) << endl;
+        cout << left << setw(10) << "betaPv0"  << setw(10) << betaP*v0 << endl;
+        cout << left << setw(10) << "betaP"    << setw(10) << betaP << endl;
+        cout << left << setw(10) << "overlap"  << setw(10) << exists_general_overlap() << endl;
+        cout << endl;
+        cout << left << setw(10) << "dl"       << setw(10) << dl << endl;
+        cout << left << setw(10) << "dn"       << setw(10) << dn << endl;
+        cout << left << setw(10) << "dV"       << setw(10) << dV << endl;
+        cout << left << setw(10) << "pvol"     << setw(10) << pvol << endl;
+        cout << endl;
+    }
+
     void file_config(string filename){
         auto [part_c, box_l_c, N_c, L_c] = file_config_initial(filename);
-        part = part_c;
-        N = N_c;
+        part  = part_c;
+        N     = N_c;
         box_l = box_l_c;
-        L = L_c;
+        L     = L_c;
+
         rho_cp = 2 / (sqrt(2) + (L/D)*sqrt(3));
         v0 = M_PI * (L * pow(D, 2) / 4 + pow(D, 3) / 6);
+        V = box_l[0] * box_l[1] * box_l[2];
+        rho =  N * v0 / (V * rho_cp);
     }
 
     void fcc_config(int N_side, double rho_initial){
@@ -133,7 +160,8 @@ struct simulation{
             double factor = cbrt(V_proposed/V);
             scale(factor);
 
-            if(!exists_general_overlap() && (rdouble() < exp(-betaP*(V_proposed - V) + N * log(V_proposed/V)))){
+            if((rdouble() < exp(-betaP*(V_proposed - V) + N * log(V_proposed/V))) && !exists_general_overlap()){
+                //cout << "changed volume! deltaV = " << V_proposed - V << endl;
                 V = V_proposed;
                 rho = N * v0 / (V * rho_cp);
                 accept++;
@@ -144,6 +172,13 @@ struct simulation{
         }
         else{
             NVT_step();
+        }
+    }
+
+    void NPT_run(int steps){
+        for(int i=0; i<steps; i++){
+            step++;
+            NPT_step();
         }
     }
 };

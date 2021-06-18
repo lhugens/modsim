@@ -194,7 +194,7 @@ tuple<vector<particle>, vector<double>, int, double> file_config_initial(string 
     double g, n;
     int N;
 
-    ifstream infile("liquid_config.dat");
+    ifstream infile(filename);
     string line;
 
     infile >> N;

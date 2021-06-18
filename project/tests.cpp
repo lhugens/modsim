@@ -131,6 +131,18 @@ void liquid_config(int N_side, double rho_initial){
     //}
     cout << "found liquid phase" << endl;
 }
+
+// run this to see that for our initial fcc, S = 1
+void order_parameter(){
+    simulation s("dont_matter", 3);
+    s.fcc_config(5, 0.5);
+    s.update_S();
+}
+
+NVT("coords_LIQUID/coords_", 0.5, 3.5, 1e5, 1e4);
+NPT(0, "coords_EOS/coords_", 2.0, 0.3, 3, 1e3, 1, 0);
+EOS();
+NVT("LIQUID_CONFIG/coords", 0.3, 3.0, 1e5, 1e3);
 */
 
 int main(){

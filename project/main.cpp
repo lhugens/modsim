@@ -37,10 +37,11 @@ void NVT(string folder, double rho, double L, int total_steps, int write_steps){
         s.write_config(s.step);
         cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
              << " acc. rate: " << setw(10) << s.accept_rate 
+             << " rho: " << setw(10) << s.rho
+             << " overlap: " << setw(10) << s.exists_general_overlap()
              << " S: " << setw(10) << s.S
              << flush;
     }
-    print(s.part);
     cout << endl;
 
 }
@@ -102,37 +103,100 @@ void NPT(int betaPv0_no, string folder, double betaPv0, double rho_initial, doub
 }
 
 void EOS(){
+    // preparing betaPv0 values
     double betaPv0_min = 2.0;
     double betaPv0_max = 12.0;
     int betaPv0_no  = 10;
     double delta = (betaPv0_max - betaPv0_min) / (double)betaPv0_no;
 
+    // steps control
+    int total_steps = 1e6;
+    int fast_steps = 1e3;
+    int measure_steps = 1e3;
 
-    for(int i=0; i<betaPv0_no+1; i++){
+    simulation s("", 3);
+    s.file_config("liquid_0.3.dat");
+
+    // MC proposals
+    s.pvol = 0.5;
+    s.dl = 0.05;
+    s.dl = 0.05;
+    s.dV = 10;
+
+    for(int i=0; i<betaPv0_no; i++){
+
+        // prepare file to output density and S values
         string no_str = to_string(i);
-        string folder = "coords_EOS/coords_" + string(3 - no_str.length(), '0') + no_str;
-        NPT(i, folder, betaPv0_min+delta*i, 0.3, 3, 1e4, 100, 1e2);
+        string filename = "EOS/EOS_" + string(3 - no_str.length(), '0') + no_str + ".dat";
+
+        ofstream file;
+        file.open(filename);
+        double betaPv0 = betaPv0_min+delta*i;
+        file << betaPv0 << endl;
+
+        // start a new simulation, using the final config of
+        // the previous simulation as initial config
+        s.step = 0;
+        s.accept = 0;
+        s.folder = "coords_EOS/coords_" + string(3 - no_str.length(), '0') + no_str;
+
+        s.betaP = betaPv0 / s.v0;
+        s.print_parameters();
+        s.write_config(0);
+
+        while(s.step < total_steps){
+            s.NPT_run(fast_steps);
+            s.write_config(s.step);
+
+            cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
+                 << " acc. rate: " << setw(10) << s.accept_rate
+                 << " rho: "       << setw(10) << s.rho
+                 << flush;
+        }
+        cout << endl;
+
+        for(int i=0; i<measure_steps; i++){
+            s.step++;
+            s.NPT_step();
+            s.update_S();
+            file << left << setw(20) << i << setw(20) << s.rho << setw(20) << s.S << endl;
+        }
+        file.close();
     }
 }
 
-// run this to see that for our initial fcc, S = 1
-void order_parameter(){
-    simulation s("dont_matter", 3);
-    s.fcc_config(5, 0.5);
-    s.update_S();
+void NPT_1_value(){
+
+    simulation s("NPT/coords", 3);
+    s.file_config("liquid_0.374.dat");
+    double betaPv0 = 2;
+    s.betaP = betaPv0 / s.v0;
+    s.pvol = 0.5;
+    s.dl = 0.05;
+    s.dl = 0.05;
+    s.dV = 10;
+    s.print_parameters();
+    /*
+    s.write_config(0);
+
+    int total_steps = 1e6;
+    int fast_steps = 1e3;
+
+    while(s.step < total_steps){
+        s.NPT_run(fast_steps);
+        s.write_config(s.step);
+
+        cout << "\r [" << setw(3) << round((double)s.step * 100 /total_steps)  << "%]" 
+             << " acc. rate: " << setw(10) << s.accept_rate
+             << " rho: "       << setw(10) << s.rho
+             << flush;
+    }
+    cout << endl;
+    */
 }
 
 int main(){
     dsfmt_seed(time(NULL));
 
-    //NVT("coords_LIQUID/coords_", 0.5, 3.5, 1e5, 1e4);
-    //NPT(0, "coords_EOS/coords_", 2.0, 0.3, 3, 1e3, 1, 0);
-    //EOS();
 
-    // current idea: start with an fcc at a low density, perform NVT 
-    // to get it to a liquid phase, with all positions and orientations
-    // random, and then perform NPT at high pressure to make the density 
-    // go up until we have a desired one, like 0.3
-
-    NVT("LIQUID_CONFIG/coords", 0.3, 3.0, 1e5, 1e3);
 }

@@ -9,7 +9,5 @@ coords_NEMATIC0
 coords_NEMATIC1
 EOS
 LIQUID_CONFIG
-liquid_config.dat
-not_normalized.dat
-_step_000000000.dat
+NPT
 TEST
