@@ -29,7 +29,11 @@ struct simulation{
         rho_cp = 2 / (sqrt(2) + (L/D)*sqrt(3));
     };
 
-    inline void write_config(int step_no){write_config_to_file(step_no, N, box_l, part, L, D, folder);}
+    void write_config(int step_no){
+        string step_str = to_string(step_no);
+        string filename = folder + "_step_" + string(9 - step_str.length(), '0') + step_str + ".dat";
+        write_config_to_file(part, box_l, N, L, filename);
+    }
 
     inline double rint(){return (int)(dsfmt_genrand() * N);}
 

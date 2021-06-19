@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <math.h>
 #include <vector>
+#include <filesystem>
 
 #define ndim 3
 
@@ -234,32 +235,55 @@ for(auto dll : dls){
 }
 */
 
-int main(){
-    dsfmt_seed(time(NULL));
-
+void test_visualize(){
     vector<double> box_l = {10, 10, 10};
     vector<particle> part;
 
     particle p;
 
     p.pos = {1, 1, 1};
-    p.dir = {0, 0, 1};
+    p.dir = {1, 1, -1};
+    normalize(p.dir);
 
     part.push_back(p);
 
-    p.pos = {1, 5, 1};
+    p.pos = {1, 1, 5};
     p.dir = {0, 1, 0};
 
     part.push_back(p);
 
-    p.pos = {1, 7, 1};
+    p.pos = {1, 1, 7};
     p.dir = {1, 0, 0};
 
     part.push_back(p);
 
-    string folder = "TEST/test"; 
+    string filename = "TEST/test"; 
     double L = 2;
     double D = 1;
     int N = 3;
-    write_config_to_file(0, N, box_l, part, L, D, folder);
+    write_config_to_file(part, box_l, N, L, filename);
+}
+
+// valid since C++17
+void convert(){
+    cout << filesystem::current_path() << endl;
+    //using recursive_directory_iterator = filesystem::recursive_directory_iterator;
+    string filename;
+
+    for (const auto& dirEntry : filesystem::recursive_directory_iterator(filesystem::current_path())){
+        filename = dirEntry.path().string();
+        if(filename.find(".dat") != string::npos){
+            cout << "converting " << filename  << endl;
+            auto [part, box_l, N, L] = file_config_initial_old(filename);
+            write_config_to_file(part, box_l, N, L, filename);
+        }
+
+    }
+}
+
+int main(){
+    dsfmt_seed(time(NULL));
+
+    convert();
+
 }

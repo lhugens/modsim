@@ -141,10 +141,7 @@ vector<vector<double>> rotation_matrix(vector<double> &n){
     return rot_matrix;
 }
 
-void write_config_to_file(int step, int &N, vector<double> &box_l, vector<particle> &part, double &L, double &D, string &folder){
-
-    string step_str = to_string(step);
-    string filename = folder + "_step_" + string(9 - step_str.length(), '0') + step_str + ".dat";
+void write_config_to_file(vector<particle> &part, vector<double> &box_l, int &N, double &L, string &filename){
 
     ofstream file;
     file.open(filename);
@@ -178,6 +175,49 @@ void write_config_to_file(int step, int &N, vector<double> &box_l, vector<partic
 }
 
 tuple<vector<particle>, vector<double>, int, double> file_config_initial(string filename){
+    vector<particle> part;
+    vector<double> box_l(ndim);
+    particle p_temp;
+
+    string trash;
+    double g, n0, n1, n2;
+    int N;
+
+    ifstream infile(filename);
+    string line;
+
+    infile >> N;
+
+    // read box
+    for (int i = 0; i < ndim; i++){
+        infile >> g >> box_l[i];
+    }
+
+    for(int i=0; i<N; i++){
+        infile >> trash;
+
+        for(int j=0; j<ndim; j++){
+            infile >> p_temp.pos[j];
+        }
+        infile >> g  >> g  >> g;
+        infile >> g  >> g  >> g;
+        infile >> n0 >> n1 >> n2;
+
+        p_temp.dir[0] = n0;
+        p_temp.dir[1] = n1;
+        p_temp.dir[2] = n2;
+
+    	part.push_back(p_temp);
+    }
+
+    unsigned first = trash.find("(");
+    unsigned last = trash.find(")");
+    string new_trash = trash.substr(first+1, last-first-1);
+    double L = stod(new_trash);
+    return {part, box_l, N, L};
+}
+
+tuple<vector<particle>, vector<double>, int, double> file_config_initial_old(string filename){
     vector<particle> part;
     vector<double> box_l(ndim);
     particle p_temp;

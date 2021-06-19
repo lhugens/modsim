@@ -11,7 +11,5 @@ coords_SL
 EOS
 LIQUID_CONFIG
 NPT
-parameters.txt
-plots
 SL
 TEST
