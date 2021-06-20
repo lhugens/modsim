@@ -233,6 +233,48 @@ for(auto dll : dls){
         }
     } 
 }
+
+tuple<vector<particle>, vector<double>, int, double> file_config_initial_old(string filename){
+    vector<particle> part;
+    vector<double> box_l(ndim);
+    particle p_temp;
+
+    string trash;
+    double g, n;
+    int N;
+
+    ifstream infile(filename);
+    string line;
+
+    infile >> N;
+
+    // read box
+    for (int i = 0; i < ndim; i++){
+        infile >> g >> box_l[i];
+    }
+
+    for(int i=0; i<N; i++){
+        infile >> trash;
+
+        for(int j=0; j<ndim; j++){
+            infile >> p_temp.pos[j];
+        }
+        infile >> g >> g >> n;
+        p_temp.dir[0] = -n;
+        infile >> g >> g >> n;
+        p_temp.dir[1] = -n;
+        infile >> g >> g >> n;
+        p_temp.dir[2] = n;
+
+    	part.push_back(p_temp);
+    }
+
+    unsigned first = trash.find("(");
+    unsigned last = trash.find(")");
+    string new_trash = trash.substr(first+1, last-first-1);
+    double L = stod(new_trash);
+    return {part, box_l, N, L};
+}
 */
 
 void test_visualize(){
