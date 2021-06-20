@@ -1,0 +1,607 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{indentfirst}
+\usepackage{mathtools}
+\end_preamble
+\use_default_options true
+\begin_modules
+theorems-ams
+theorems-chap
+\end_modules
+\maintain_unincluded_children false
+\language british
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement H
+\paperfontsize default
+\spacing double
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1cm
+\topmargin 2cm
+\rightmargin 1cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style british
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Study of liquid and nematic phases in hard spherocylinders
+\end_layout
+
+\begin_layout Author
+Leonardo Hügens and Johanna Lömker
+\end_layout
+
+\begin_layout Abstract
+In this project we studied a system of hard spherocylinders using NVT and
+ NPT Monte Carlo msimulations.
+ We used the paper 
+\emph on
+Tracing the phase boundaries of hard spherocylinders 
+\emph default
+(Bolhuis and Frenkel, 1997) as a reference, trying to replicate some of
+ its results.
+ What we found was that (...)
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+The model we study in this project is the hard spherocylinders model, and
+ the interest in their study comes from their capability to form all sorts
+ of order phases, each of them mainly characterized by order/disorder in
+ their position and orientation, e.g.
+ the liquid phase is the most disordered and isotropic, while in the solid
+ phase every spherocylinder shares the same orientation, and they are positioned
+ in layers orthogonal to theirs orientation.
+ 
+\end_layout
+
+\begin_layout Standard
+The main reference we used to compare our results to was 
+\emph on
+Tracing the phase boundaries of hard spherocylinders 
+\emph default
+(Bolhuis and Frenkel, 1997) 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper1"
+literal "false"
+
+\end_inset
+
+.
+ Our first goal was to use Monte Carlo NVT simulations to observe some of
+ the phases of the hard spherocylinders, mainly the liquid and nematic ones,
+ and checking if their existence with the used parameters makes sense according
+ to the phase diagrams present in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper1"
+literal "false"
+
+\end_inset
+
+.
+ Our second goal was to use NPT Monte Carlo simulations to build an volume-press
+ure state curve, as the paper has several of them for us to compare with.
+ During these simulations, we pay close attention to the nematic order parameter
+ 
+\begin_inset Formula $S$
+\end_inset
+
+, which we'll define later, that measures whether or not the spherocylinders
+ have an overall common orientation.
+\end_layout
+
+\begin_layout Section
+Model
+\end_layout
+
+\begin_layout Standard
+The model we study in this project is the hard spherocylinder model, which
+ consists of 
+\begin_inset Formula $N$
+\end_inset
+
+ cylinders of length 
+\begin_inset Formula $L$
+\end_inset
+
+ that have half spheres of diameter 
+\begin_inset Formula $D$
+\end_inset
+
+ attached to each of its ends, whose interaction potential is infinite if
+ there is an overlap or touch between two of them and vanished if there
+ are no overlaps.
+ The volume of a spherocylinder is thus 
+\begin_inset Formula 
+\[
+v_{0}=\pi\left(\frac{LD^{2}}{4}+\frac{D^{3}}{6}\right).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The particles are contained in a box of volume 
+\begin_inset Formula $V$
+\end_inset
+
+ with periodic boundary conditions.
+ The convention used in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper1"
+literal "false"
+
+\end_inset
+
+ and which we'll use for the density in our project will be to use the reduced
+ density 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+, defined as 
+\begin_inset Formula 
+\[
+\rho^{*}=\frac{\rho}{\rho_{\text{cp}}},
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\rho_{\text{cp}}=\frac{2}{\sqrt{2}+\left(L/D\right)\sqrt{3}}$
+\end_inset
+
+ and 
+\begin_inset Formula 
+\[
+\rho=\frac{Nv_{0}}{V}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To measure the orientation order/disorder of the system, we'll refer to
+ the nematic order parameter 
+\begin_inset Formula $S$
+\end_inset
+
+, defined by 
+\begin_inset Formula 
+\[
+S=\frac{1}{N}\sum_{i=1}^{N}\left[\frac{3}{2}\cos^{2}\left(\theta_{i}\right)-\frac{1}{2}\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\theta_{i}$
+\end_inset
+
+ is the angle formed by the orientation vector of particle 
+\begin_inset Formula $i$
+\end_inset
+
+, 
+\begin_inset Formula $\boldsymbol{n}_{i}$
+\end_inset
+
+, and the 
+\emph on
+director
+\emph default
+ vector 
+\begin_inset Formula $\boldsymbol{n}_{d}$
+\end_inset
+
+, which is the normalized average of all the orientation vectors, so:
+\begin_inset Formula 
+\[
+\cos\left(\theta_{i}\right)=\boldsymbol{n}_{i}\cdot\boldsymbol{n}_{d}=\boldsymbol{n}_{i}\cdot\frac{\sum_{j=1}^{N}\boldsymbol{n}_{j}}{\left|\left|\sum_{j=1}^{N}\boldsymbol{n}_{j}\right|\right|}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the case where all the particles have that same orientation, i.e.
+ 
+\begin_inset Formula $\boldsymbol{n}_{i}=\boldsymbol{n}\,\,\forall\,i$
+\end_inset
+
+, we have 
+\begin_inset Formula $\cos\theta=1$
+\end_inset
+
+, which implies 
+\begin_inset Formula $S=1$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+In the NPT simulations, we'll use the quantity 
+\begin_inset Formula $\beta Pv_{0}$
+\end_inset
+
+ as a proxy for the pressure 
+\begin_inset Formula $P$
+\end_inset
+
+, and temperature 
+\begin_inset Formula $\beta$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+Methods
+\end_layout
+
+\begin_layout Subsection
+Minimum distance between 
+\begin_inset Formula $\left(L,D\right)$
+\end_inset
+
+ spherocylinders
+\end_layout
+
+\begin_layout Standard
+To perform our simulations, we need to be able to check for overlapping
+ spherocylinders in a numeric way.
+ To this end, we implemented the algorithm described in 
+\emph on
+A fast algorithm to evaluate the shortest distance between rods 
+\emph default
+(Vega and Lago, 1994) 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper2"
+literal "false"
+
+\end_inset
+
+.
+ The minimum distance this algorithm returns refers two one dimensional
+ (thick-less) rods, and thus two spherocylinders overlap if this distance
+ is equal or less than 
+\begin_inset Formula $D$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Visualization
+\end_layout
+
+\begin_layout Standard
+In order to observe qualitatively the phase of the system during a simulation,
+ we used the program 
+\emph on
+Viscol
+\emph default
+, publicly accessible via 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://webspace.science.uu.nl/~herme107/viscol/"
+literal "true"
+
+\end_inset
+
+.
+ In our simulation, we store each particle's position 
+\begin_inset Formula $\boldsymbol{r}_{i}$
+\end_inset
+
+ and orientation vector 
+\begin_inset Formula $\boldsymbol{n}_{i}$
+\end_inset
+
+, but unfortunately the input format required by the program for it to plot
+ the particles is not simply the 
+\begin_inset Formula $6$
+\end_inset
+
+ values of those two vectors.
+ Instead, it is required to build a rotation matrix 
+\begin_inset Formula $M$
+\end_inset
+
+, in the picture where the matrix acts on the frame in which the particle
+ is fixed, and not on the particle itself.
+ Plugging in the identity matrix, the particle was oriented in the 
+\begin_inset Formula $\hat{z}$
+\end_inset
+
+ direction, which means that 
+\begin_inset Formula $M$
+\end_inset
+
+ is given by:
+\begin_inset Formula 
+\begin{align*}
+M & =R_{y}\left(-\theta\right)R_{z}\left(\phi\right)\\
+ & =\left(\begin{array}{llc}
+\cos\theta & 0 & -\sin\theta\\
+0 & 1 & 0\\
+\sin\theta & 0 & \cos\theta
+\end{array}\right)\left(\begin{array}{llc}
+\cos\phi & \sin\phi & 0\\
+-\sin\phi & \cos\phi & 0\\
+0 & 0 & 1
+\end{array}\right)\\
+ & =\left(\begin{array}{llc}
+\cos\theta\cos\phi & \cos\theta\sin\phi & -\sin\theta\\
+-\sin\phi & \cos\phi & 0\\
+\sin\theta\cos\phi & \sin\theta\sin\phi & \cos\theta
+\end{array}\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where for a given orientation vector 
+\begin_inset Formula $\boldsymbol{n}$
+\end_inset
+
+ we can determine the elements of this matrix as follows:
+\begin_inset Formula 
+\begin{align*}
+\cos\theta & =\boldsymbol{n}\cdot\hat{z}\\
+\sin\theta & =\sqrt{n_{x}^{2}+n_{y}^{2}}\\
+\cos\phi & =\frac{n_{x}}{\sin\theta}\\
+\sin\phi & =\frac{n_{y}}{\sin\theta}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+NVT Monte Carlo
+\end_layout
+
+\begin_layout Standard
+To perform an NVT Monte Carlo simulation, we first pick an initial configuration
+ of the system, i.e.
+ 
+\begin_inset Formula $N$
+\end_inset
+
+ positions and orientation vectors with no existent overlap.
+ One initial configuration that is straightforward to build is that of an
+ FCC grid, for which no overlaps will exists 
+\emph on
+a priori
+\emph default
+, and thus it is very convenient to use.
+ In the course of our project we did a lot of simulations, and the saved
+ configurations generated in NVT or NPT runs are also very convenient to
+ use, specially because they (the ones we studied) are mostly liquid and
+ ranging various densities, which if we wanted to artificially generate
+ one liquid configuration at a specific density it would most likely involve
+ a lot of inefficient trial and error.
+ 
+\end_layout
+
+\begin_layout Standard
+At each NVT MC step we pick one particle with uniform probability, and propose
+ to either change is position or orientation slightly, also with uniform
+ probability.
+ If this displacement does not cause the chosen particle to overlap one
+ of its neighboring particles, we accept it with probability of one, since
+ the Metropolis acceptance weight is given by
+\begin_inset Formula 
+\[
+\frac{\operatorname{acc}(\text{old}\rightarrow\text{new})}{\operatorname{acc}(\text{new}\rightarrow\text{old})}=\exp\left[-\beta\left(U\left(\mathbf{s}^{N};L^{\prime}\right)-U\left(\mathbf{s}^{N};L\right)+P\left(V^{\prime}-V\right)-N\beta^{-1}\ln\left(V^{\prime}/V\right)\right)\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where in our case the hard particle interaction potential 
+\begin_inset Formula $U$
+\end_inset
+
+ makes this acceptance ratio always 
+\begin_inset Formula $1$
+\end_inset
+
+ in the absence of overlaps and 
+\begin_inset Formula $0$
+\end_inset
+
+ in their presence, and in NVT the volume 
+\begin_inset Formula $V$
+\end_inset
+
+ is kept constant.
+\end_layout
+
+\begin_layout Subsection
+NPT Monte Carlo
+\end_layout
+
+\begin_layout Standard
+An NPT MC simulation differs from an NVT one in the following manner: at
+ each step of the simulation, we propose to change the volume of the box
+ containing the particles with probability 
+\begin_inset Formula $\mathbb{\mathbb{P}}_{\text{vol}}$
+\end_inset
+
+, by scaling the box boundaries and positions of the particles.
+ If a generated uniformly random number is less than 
+\begin_inset Formula $\mathbb{\mathbb{P}}_{\text{vol}}$
+\end_inset
+
+, we propose that scaling, otherwise a regular NVT step will be performed.
+ After rejecting the proposal in the case where it has overlaps, we accept
+ the proposal according to the probability:
+\begin_inset Formula 
+\[
+\frac{\operatorname{acc}(o\rightarrow n)}{\operatorname{acc}(n\rightarrow o)}=\exp\left[-\beta P\left(V^{\prime}-V\right)+N\ln\left(V^{\prime}/V\right)\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Results and Discussions
+\end_layout
+
+\begin_layout Standard
+sdf
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/NPT.png
+	lyxscale 10
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+NPT
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\lang english
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintAll"
+bibfiles "hs"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
