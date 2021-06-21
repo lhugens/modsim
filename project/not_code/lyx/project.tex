@@ -103,7 +103,11 @@ $\boldsymbol{n}_{i}=\boldsymbol{n}\,\,\forall\,i$, we have $\cos\theta=1$,
 which implies $S=1$. 
 
 In the NPT simulations, we'll use the quantity $\beta Pv_{0}$ as
-a proxy for the pressure $P$, and temperature $\beta$. 
+a proxy for the pressure $P$, and temperature $\beta$. The quantity
+$\frac{L}{D}$ is also referred to as shape anisotropy, the limit
+$\frac{L}{D}=0$ corresponds to regular spheres of diameter $D$,
+and the limit $\frac{L}{D}\rightarrow+\infty$ corresponds to 1-dimensional
+rods of length $L$.
 
 \section{Methods}
 
@@ -204,12 +208,172 @@ accept the proposal according to the probability:
 
 \section{Results and Discussions}
 
-sdf
+\subsection{NVT}
+
+In our reference paper \cite{paper1}, a full phase diagram $\rho^{*}$
+vs $\frac{L}{D}$ for $0<\frac{L}{D}<5$ is achieved, and it's represented
+in the following Figure \ref{fig:phases}. Firstly, we implemented
+and ran NVT simulations for fixed values of $\frac{L}{D}$ and $\rho^{*}$,
+to then visualize equilibrium configurations and qualitatively assess
+in which phase they are in, while also checking the nematic order
+parameter $S$. 
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[width=0.8\textwidth]{/home/hugens/shared/uni/modsim/modsim/project/figures/phases}
+\par\end{centering}
+\caption{Phase diagram for hard spherocylinders.\label{fig:phases}}
+\end{figure}
+
+The convenient FCC configuration we usually started with to perform
+these NVT simulations is represented below in Figure \ref{fig:fcc}.
+At first we had some trouble with this since we were trying to use
+a strictly cubic box, as it usually fixed, and that would result in
+overlapping even for medium densities $\rho^{*}$. We fixed this issue
+by only performing the scaling in the $x$ and $y$ directions to
+achieve the desired density. We also left a few `leftover' space
+along 3 of the faces of the box, as visible in Figure \ref{fig:fcc},
+because if we filled the box entirely the particles in opposite faces
+would effectively be in the same positions due to the periodic boundary
+conditions, overlapping. 
+
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[width=0.3\textheight]{/home/hugens/shared/uni/modsim/modsim/project/figures/fcc}\includegraphics[width=0.3\textheight]{/home/hugens/shared/uni/modsim/modsim/project/figures/fcc_top}
+\par\end{centering}
+\caption{Initial FCC configurations.\label{fig:fcc}}
+\end{figure}
+
+The results we obtained are represented in the following Figure \ref{fig:our_phases}.
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[width=0.8\textwidth]{/home/hugens/shared/uni/modsim/modsim/project/figures/model_configs}
+\par\end{centering}
+\caption{Visual representation of equilibrium configurations obtained using
+NVT runs.\label{fig:our_phases}}
+\end{figure}
+
+In the represented equilibrium configurations, it seems like only
+the one with $S=0.738$ could be argued not to be a liquid phase,
+because of the high nematic order parameter. For the rest of the configurations,
+from the low $S$ values and from a qualitative judgment of their
+appearance, we may conclude they are all in the liquid phase. Below,
+in Figure \ref{fig:phases_pic}, we present a figure taken from \cite{paper3},
+in which several phases for hard cylinders are represented. Even though
+these are not spherocylinders, these phases are also found in hard
+spherocylinders. We think that a valid reason as to why basically
+all of our configurations are liquid after NVT runs is that the usual
+crystal phase for hard spherocylinders is characterized by hexagonally
+ordered layers which are stacked in an 'AAA' fashion \cite{paper1},
+and none are FCC-like configurations as represented in Figure \ref{fig:fcc},
+i.e. it is possible that if we started from a configuration, e.g.
+smectic B as in Figure \ref{fig:phases_pic}, the system could not
+be able to melt (for a $\rho^{*}$ and $\frac{L}{D}$ values in the
+appropriate region of the phase diagram \ref{fig:phases}).
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[width=1\textwidth]{/home/hugens/shared/uni/modsim/modsim/project/figures/phases_picture}
+\par\end{centering}
+\caption{Representation of some phases for hard cylinders.\label{fig:phases_pic}}
+\end{figure}
+
+
+\subsection{NPT}
+
+In the reference paper \cite{paper1} there are several plots with
+equations of state $\left(\rho^{*},\beta Pv_{0}\right)$ for various
+shape anisotropy values. Since they are the liquid phase in these
+plots does not suffer appreciable change among all the anisotropy
+values, we decided to pick $L/D=3$ and try to replicate that plot,
+represented in Figure \ref{fig:their_npt}.
+
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[width=0.7\textwidth]{/home/hugens/shared/uni/modsim/modsim/project/figures/their_npt}
+\par\end{centering}
+\caption{Equation of state for spherocylinders with shape anisotropy $L/D$
+of 3. \label{fig:their_npt}}
+\end{figure}
+
+To this intent, we started with the value $\beta Pv_{0}=2$, with
+a liquid initial configuration at $\rho^{*}=0.37$, which is already
+pretty close to the equilibrium value. The maximum displacement values
+we used were: for volume $dV=10$, for each component of position
+$dl=0.01$, for each component of the orientation vector $dn=0.1$
+(we always normalized the vector after the proposal), and $\mathbb{P}_{\text{vol}}=0.1$.
+The reason we used these values is because we performed a few thousand
+MC steps across several values of each displacement, and among the
+ones that maximized the acceptance ratio these seemed the most reasonable,
+given that all of them are quite small compared to the typical values
+which they displace, and a small $\mathbb{P}_{\text{vol}}$ value
+is expected to give the system room to adjust before it suffers contractions.
+What we've observed is represented in Figure \ref{fig:NPT2}. During
+the first half a million MC steps, the system appears to become `locked'
+in a semi-ordered level of $S=0.6$, and the density $\rho^{*}$ appears
+to slowly increase indefinitely.
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[width=1\textwidth]{/home/hugens/shared/uni/modsim/modsim/project/figures/NPT2}
+\par\end{centering}
+\caption{Left: Density evolution during a NPT run for $\beta Pv_{0}=2$. Right:
+Nematic order parameter $S$ during the same run. \label{fig:NPT2}}
+\end{figure}
+
+To investigate this issue, we looked into the acceptance criteria
+that follows the check for overlaps, i.e. if a proposed configuration
+does not result in an overlap, the acceptance probability of proposed
+change in volume $dV$ is:
+\[
+\text{acc}\left(dV\right)=\min\left\{ 1,\exp\left[-\beta PdV+N\ln\left(1+\frac{dV}{V}\right)\right]\right\} 
+\]
+
+Thus, we firstly looked at the maximum and minimum volume values of
+the $\beta Pv_{0}=2$ run mentioned before, through plotting the volume
+evolution of the run, represented in the following Figure \ref{fig:NPT2_vol}:
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[width=0.5\textwidth]{/home/hugens/shared/uni/modsim/modsim/project/figures/vs}
+\par\end{centering}
+\caption{Volume evolution during a NPT run for $\beta Pv_{0}=2$ \label{fig:NPT2_vol}}
+\end{figure}
+
+Identifying $V_{\text{min}}\approx7000$ and $V_{\text{max}}\approx1600$,
+we plotted the acceptance rate $\text{acc}\left(dV\right)$ for this
+two values and several $\beta Pv_{0}$ values, and the results are
+represented in the following Figure \ref{fig:acc}.
+\begin{figure}[H]
+\begin{centering}
+\includegraphics[width=1\textwidth]{/home/hugens/shared/uni/modsim/modsim/project/figures/acc}
+\par\end{centering}
+\caption{Acceptance criteria (after non-overlap check) for extreme volumes
+and typical $\beta Pv_{0}$values. \label{fig:acc}}
+\end{figure}
+
+What we observe is that for values of the pressure such that $\beta Pv_{0}>1$,
+proposed moves that decrease the volume $V$ are always accepted across
+all the possibly reasonable $V$ values (since we tested with $V_{\min}$
+and $V_{\max}$), while proposed moves that increase it are very rarely
+accepted. Since we let the system explore a lot of configurations
+before compressing ($\mathbb{P}_{\text{vol}}=0.1$), the behavior
+we see in Figure \ref{fig:NPT2_vol} makes sense, even though it does
+not agree with the reference paper \cite{paper1}, where the system
+equilibrates at $\rho^{*}\approx0.37$. It is also intuitive that
+even for $\beta Pv_{0}$ values for which there is always this biased
+behavior towards decreasing the volume, at some point the spherocylinders
+should get so close that almost any positional and orientational proposed
+displacement would result in overlaps, but our results indicate that
+this does not happen already pretty early in the $\beta Pv_{0}$ scale
+of the paper, thus contradicting it. 
+
+Based on the acceptance results we found (Figure \ref{fig:acc}),
+we decided to run NPT simulations on $\beta Pv_{0}$ values that don't
+seem to have this bias towards volume decreasing. Our results are
+represented in the following Figure \ref{fig:NPT}.
+
 \begin{figure}[H]
 \begin{centering}
 \includegraphics[width=1\textwidth]{/home/hugens/shared/uni/modsim/modsim/project/figures/NPT}
 \par\end{centering}
-\caption{NPT}
+\caption{NPT\label{fig:NPT}}
 
 \end{figure}
 

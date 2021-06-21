@@ -321,7 +321,27 @@ In the NPT simulations, we'll use the quantity
 \end_inset
 
 .
- 
+ The quantity 
+\begin_inset Formula $\frac{L}{D}$
+\end_inset
+
+ is also referred to as shape anisotropy, the limit 
+\begin_inset Formula $\frac{L}{D}=0$
+\end_inset
+
+ corresponds to regular spheres of diameter 
+\begin_inset Formula $D$
+\end_inset
+
+, and the limit 
+\begin_inset Formula $\frac{L}{D}\rightarrow+\infty$
+\end_inset
+
+ corresponds to 1-dimensional rods of length 
+\begin_inset Formula $L$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -549,8 +569,836 @@ An NPT MC simulation differs from an NVT one in the following manner: at
 Results and Discussions
 \end_layout
 
+\begin_layout Subsection
+NVT
+\end_layout
+
 \begin_layout Standard
-sdf
+In our reference paper 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper1"
+literal "false"
+
+\end_inset
+
+, a full phase diagram 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+ vs 
+\begin_inset Formula $\frac{L}{D}$
+\end_inset
+
+ for 
+\begin_inset Formula $0<\frac{L}{D}<5$
+\end_inset
+
+ is achieved, and it's represented in the following Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:phases"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Firstly, we implemented and ran NVT simulations for fixed values of 
+\begin_inset Formula $\frac{L}{D}$
+\end_inset
+
+ and 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+, to then visualize equilibrium configurations and qualitatively assess
+ in which phase they are in, while also checking the nematic order parameter
+ 
+\begin_inset Formula $S$
+\end_inset
+
+.
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/phases.png
+	lyxscale 10
+	width 80text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Phase diagram for hard spherocylinders.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:phases"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The convenient FCC configuration we usually started with to perform these
+ NVT simulations is represented below in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:fcc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ At first we had some trouble with this since we were trying to use a strictly
+ cubic box, as it usually fixed, and that would result in overlapping even
+ for medium densities 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+.
+ We fixed this issue by only performing the scaling in the 
+\begin_inset Formula $x$
+\end_inset
+
+ and 
+\begin_inset Formula $y$
+\end_inset
+
+ directions to achieve the desired density.
+ We also left a few 
+\begin_inset Quotes bld
+\end_inset
+
+leftover
+\begin_inset Quotes brd
+\end_inset
+
+ space along 3 of the faces of the box, as visible in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:fcc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, because if we filled the box entirely the particles in opposite faces
+ would effectively be in the same positions due to the periodic boundary
+ conditions, overlapping.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/fcc.png
+	lyxscale 10
+	width 30theight%
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/fcc_top.png
+	lyxscale 10
+	width 30theight%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Initial FCC configurations.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:fcc"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The results we obtained are represented in the following Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:our_phases"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/model_configs.PNG
+	lyxscale 10
+	width 80text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Visual representation of equilibrium configurations obtained using NVT runs.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:our_phases"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the represented equilibrium configurations, it seems like only the one
+ with 
+\begin_inset Formula $S=0.738$
+\end_inset
+
+ could be argued not to be a liquid phase, because of the high nematic order
+ parameter.
+ For the rest of the configurations, from the low 
+\begin_inset Formula $S$
+\end_inset
+
+ values and from a qualitative judgment of their appearance, we may conclude
+ they are all in the liquid phase.
+ Below, in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:phases_pic"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, we present a figure taken from 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper3"
+literal "false"
+
+\end_inset
+
+, in which several phases for hard cylinders are represented.
+ Even though these are not spherocylinders, these phases are also found
+ in hard spherocylinders.
+ We think that a valid reason as to why basically all of our configurations
+ are liquid after NVT runs is that the usual crystal phase for hard spherocylind
+ers is characterized by hexagonally ordered layers which are stacked in
+ an 'AAA' fashion 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper1"
+literal "false"
+
+\end_inset
+
+, and none are FCC-like configurations as represented in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:fcc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, i.e.
+ it is possible that if we started from a configuration, e.g.
+ smectic B as in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:phases_pic"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, the system could not be able to melt (for a 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+ and 
+\begin_inset Formula $\frac{L}{D}$
+\end_inset
+
+ values in the appropriate region of the phase diagram 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:phases"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/phases_picture.png
+	lyxscale 10
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Representation of some phases for hard cylinders.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:phases_pic"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+NPT
+\end_layout
+
+\begin_layout Standard
+In the reference paper 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper1"
+literal "false"
+
+\end_inset
+
+ there are several plots with equations of state 
+\begin_inset Formula $\left(\rho^{*},\beta Pv_{0}\right)$
+\end_inset
+
+ for various shape anisotropy values.
+ Since they are the liquid phase in these plots does not suffer appreciable
+ change among all the anisotropy values, we decided to pick 
+\begin_inset Formula $L/D=3$
+\end_inset
+
+ and try to replicate that plot, represented in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:their_npt"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/their_npt.png
+	lyxscale 10
+	width 70text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Equation of state for spherocylinders with shape anisotropy 
+\begin_inset Formula $L/D$
+\end_inset
+
+ of 3.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:their_npt"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To this intent, we started with the value 
+\begin_inset Formula $\beta Pv_{0}=2$
+\end_inset
+
+, with a liquid initial configuration at 
+\begin_inset Formula $\rho^{*}=0.37$
+\end_inset
+
+, which is already pretty close to the equilibrium value.
+ The maximum displacement values we used were: for volume 
+\begin_inset Formula $dV=10$
+\end_inset
+
+, for each component of position 
+\begin_inset Formula $dl=0.01$
+\end_inset
+
+, for each component of the orientation vector 
+\begin_inset Formula $dn=0.1$
+\end_inset
+
+ (we always normalized the vector after the proposal), and 
+\begin_inset Formula $\mathbb{P}_{\text{vol}}=0.1$
+\end_inset
+
+.
+ The reason we used these values is because we performed a few thousand
+ MC steps across several values of each displacement, and among the ones
+ that maximized the acceptance ratio these seemed the most reasonable, given
+ that all of them are quite small compared to the typical values which they
+ displace, and a small 
+\begin_inset Formula $\mathbb{P}_{\text{vol}}$
+\end_inset
+
+ value is expected to give the system room to adjust before it suffers contracti
+ons.
+ What we've observed is represented in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:NPT2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ During the first half a million MC steps, the system appears to become
+ 
+\begin_inset Quotes bld
+\end_inset
+
+locked
+\begin_inset Quotes brd
+\end_inset
+
+ in a semi-ordered level of 
+\begin_inset Formula $S=0.6$
+\end_inset
+
+, and the density 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+ appears to slowly increase indefinitely.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/NPT2.png
+	lyxscale 10
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Left: Density evolution during a NPT run for 
+\begin_inset Formula $\beta Pv_{0}=2$
+\end_inset
+
+.
+ Right: Nematic order parameter 
+\begin_inset Formula $S$
+\end_inset
+
+ during the same run.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:NPT2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To investigate this issue, we looked into the acceptance criteria that follows
+ the check for overlaps, i.e.
+ if a proposed configuration does not result in an overlap, the acceptance
+ probability of proposed change in volume 
+\begin_inset Formula $dV$
+\end_inset
+
+ is:
+\begin_inset Formula 
+\[
+\text{acc}\left(dV\right)=\min\left\{ 1,\exp\left[-\beta PdV+N\ln\left(1+\frac{dV}{V}\right)\right]\right\} 
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Thus, we firstly looked at the maximum and minimum volume values of the
+ 
+\begin_inset Formula $\beta Pv_{0}=2$
+\end_inset
+
+ run mentioned before, through plotting the volume evolution of the run,
+ represented in the following Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:NPT2_vol"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+:
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/vs.png
+	lyxscale 10
+	width 50text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Volume evolution during a NPT run for 
+\begin_inset Formula $\beta Pv_{0}=2$
+\end_inset
+
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:NPT2_vol"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Identifying 
+\begin_inset Formula $V_{\text{min}}\approx7000$
+\end_inset
+
+ and 
+\begin_inset Formula $V_{\text{max}}\approx1600$
+\end_inset
+
+, we plotted the acceptance rate 
+\begin_inset Formula $\text{acc}\left(dV\right)$
+\end_inset
+
+ for this two values and several 
+\begin_inset Formula $\beta Pv_{0}$
+\end_inset
+
+ values, and the results are represented in the following Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:acc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/acc.png
+	lyxscale 10
+	width 100text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Acceptance criteria (after non-overlap check) for extreme volumes and typical
+ 
+\begin_inset Formula $\beta Pv_{0}$
+\end_inset
+
+values.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:acc"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+What we observe is that for values of the pressure such that 
+\begin_inset Formula $\beta Pv_{0}>1$
+\end_inset
+
+, proposed moves that decrease the volume 
+\begin_inset Formula $V$
+\end_inset
+
+ are always accepted across all the possibly reasonable 
+\begin_inset Formula $V$
+\end_inset
+
+ values (since we tested with 
+\begin_inset Formula $V_{\min}$
+\end_inset
+
+ and 
+\begin_inset Formula $V_{\max}$
+\end_inset
+
+), while proposed moves that increase it are very rarely accepted.
+ Since we let the system explore a lot of configurations before compressing
+ (
+\begin_inset Formula $\mathbb{P}_{\text{vol}}=0.1$
+\end_inset
+
+), the behavior we see in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:NPT2_vol"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ makes sense, even though it does not agree with the reference paper 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper1"
+literal "false"
+
+\end_inset
+
+, where the system equilibrates at 
+\begin_inset Formula $\rho^{*}\approx0.37$
+\end_inset
+
+.
+ It is also intuitive that even for 
+\begin_inset Formula $\beta Pv_{0}$
+\end_inset
+
+ values for which there is always this biased behavior towards decreasing
+ the volume, at some point the spherocylinders should get so close that
+ almost any positional and orientational proposed displacement would result
+ in overlaps, but our results indicate that this does not happen already
+ pretty early in the 
+\begin_inset Formula $\beta Pv_{0}$
+\end_inset
+
+ scale of the paper, thus contradicting it.
+ 
+\end_layout
+
+\begin_layout Standard
+Based on the acceptance results we found (Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:acc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), we decided to run NPT simulations on 
+\begin_inset Formula $\beta Pv_{0}$
+\end_inset
+
+ values that don't seem to have this bias towards volume decreasing.
+ Our results are represented in the following Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:NPT"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 wide false
 sideways false
@@ -573,6 +1421,13 @@ status open
 
 \begin_layout Plain Layout
 NPT
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:NPT"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset

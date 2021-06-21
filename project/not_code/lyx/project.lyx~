@@ -321,7 +321,27 @@ In the NPT simulations, we'll use the quantity
 \end_inset
 
 .
- 
+ The quantity 
+\begin_inset Formula $\frac{L}{D}$
+\end_inset
+
+ is also referred to as shape anisotropy, the limit 
+\begin_inset Formula $\frac{L}{D}=0$
+\end_inset
+
+ corresponds to regular spheres of diameter 
+\begin_inset Formula $D$
+\end_inset
+
+, and the limit 
+\begin_inset Formula $\frac{L}{D}\rightarrow+\infty$
+\end_inset
+
+ corresponds to 1-dimensional rods of length 
+\begin_inset Formula $L$
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Section
@@ -546,7 +566,304 @@ An NPT MC simulation differs from an NVT one in the following manner: at
 \end_layout
 
 \begin_layout Section
-Results and Discussion
+Results and Discussions
+\end_layout
+
+\begin_layout Subsection
+NVT
+\end_layout
+
+\begin_layout Standard
+In our reference paper 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "paper1"
+literal "false"
+
+\end_inset
+
+, a full phase diagram 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+ vs 
+\begin_inset Formula $\frac{L}{D}$
+\end_inset
+
+ for 
+\begin_inset Formula $0<\frac{L}{D}<5$
+\end_inset
+
+ is achieved, and it's represented in the following Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:phases"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ Firstly, we implemented and ran NVT simulations for fixed values of 
+\begin_inset Formula $\frac{L}{D}$
+\end_inset
+
+ and 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+, to then visualize equilibrium configurations and qualitatively assess
+ in which phase they are in, while also checking the nematic order parameter
+ 
+\begin_inset Formula $S$
+\end_inset
+
+.
+ 
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/phases.png
+	lyxscale 10
+	width 80text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Phase diagram for hard spherocylinders.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:phases"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The convenient FCC configuration we usually started with to perform these
+ NVT simulations is represented below in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:fcc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ At first we had some trouble with this since we were trying to use a strictly
+ cubic box, as it usually fixed, and that would result in overlapping even
+ for medium densities 
+\begin_inset Formula $\rho^{*}$
+\end_inset
+
+.
+ We fixed this issue by only performing the scaling in the 
+\begin_inset Formula $x$
+\end_inset
+
+ and 
+\begin_inset Formula $y$
+\end_inset
+
+ directions to achieve the desired density.
+ We also left a few 
+\begin_inset Quotes bld
+\end_inset
+
+leftover
+\begin_inset Quotes brd
+\end_inset
+
+ space along 3 of the faces of the box, as visible in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:fcc"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, because if we filled the box entirely the particles in opposite faces
+ would effectively be in the same positions due to the periodic boundary
+ conditions, overlapping.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/fcc.png
+	lyxscale 10
+	width 30theight%
+
+\end_inset
+
+
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/fcc_top.png
+	lyxscale 10
+	width 30theight%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Initial FCC configurations.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:fcc"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The results we obtained are represented in the following Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:our_phases"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/model_configs.PNG
+	lyxscale 10
+	width 80text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Visual representation of equilibrium configurations obtained using NVT runs.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:our_phases"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(talk about these configs using S as argument suporter)
+\end_layout
+
+\begin_layout Subsection
+NPT
+\end_layout
+
+\begin_layout Standard
+In the reference 
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /home/hugens/shared/uni/modsim/modsim/project/figures/their_npt.png
+	lyxscale 10
+	width 70text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+ 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+sdf
 \begin_inset Float figure
 wide false
 sideways false
